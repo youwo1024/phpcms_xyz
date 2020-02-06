@@ -1,20 +1,20 @@
 <?php
 /**
- * 
+ *
  * 更新缓存类
  *
  */
 
 defined('IN_PHPCMS') or exit('No permission resources.');
 class cache_api {
-	
+
 	private $db;
-	
+
 	public function __construct() {
 		$this->db = '';
 		$this->siteid = get_siteid();
 	}
-	
+
 	/**
 	 * 更新缓存
 	 * @param string $model 方法名
@@ -32,8 +32,8 @@ class cache_api {
 			$this->$model();
 		}
 	}
-	
-	
+
+
 	/**
 	 * 更新站点缓存方法
 	 */
@@ -41,7 +41,7 @@ class cache_api {
 		$site = pc_base::load_app_class('sites', 'admin');
 		$site->set_cache();
 	}
-	
+
 	/**
 	 * 更新栏目缓存方法
 	 */
@@ -86,7 +86,7 @@ class cache_api {
 		setcache('category_content_'.$this->siteid,$categorys,'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新下载服务器缓存方法
 	 */
@@ -98,7 +98,7 @@ class cache_api {
 		setcache('downservers', $servers,'commons');
 		return $infos;
 	}
-	
+
 	/**
 	 * 更新敏感词缓存方法
 	 */
@@ -107,7 +107,7 @@ class cache_api {
 		setcache('badword', $infos, 'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新ip禁止缓存方法
 	 */
@@ -116,7 +116,7 @@ class cache_api {
 		setcache('ipbanned', $infos, 'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新关联链接缓存方法
 	 */
@@ -131,7 +131,7 @@ class cache_api {
 		setcache('keylink', $datas, 'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新联动菜单缓存方法
 	 */
@@ -139,16 +139,17 @@ class cache_api {
 		$infos = $this->db->select(array('keyid'=>0));
 		foreach ($infos as $r) {
 			$linkageid = intval($r['linkageid']);
-			$r = $this->db->get_one(array('linkageid'=>$linkageid),'name,siteid,style');
+			$r = $this->db->get_one(array('linkageid'=>$linkageid),'name,siteid,style,setting');
 			$info['title'] = $r['name'];
 			$info['style'] = $r['style'];
+            $info['setting'] = string2array($r['setting']);
 			$info['siteid'] = $r['siteid'];
 			$info['data'] = $this->submenulist($linkageid);
 			setcache($linkageid, $info,'linkage');
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 子菜单列表
 	 * @param intval $keyid 菜单id
@@ -163,7 +164,7 @@ class cache_api {
 		}
 		return $datas;
 	}
-	
+
 	/**
 	 * 更新推荐位缓存方法
 	 */
@@ -175,7 +176,7 @@ class cache_api {
 		setcache('position', $positions,'commons');
 		return $infos;
 	}
-	
+
 	/**
 	 * 更新投票配置
 	 */
@@ -185,7 +186,7 @@ class cache_api {
 		$setting = string2array($data[0]['setting']);
 		setcache('vote', $setting, 'commons');
 	}
-	
+
 	/**
 	 * 更新友情链接配置
 	 */
@@ -195,7 +196,7 @@ class cache_api {
 		$setting = string2array($data[0]['setting']);
 		setcache('link', $setting, 'commons');
 	}
-	
+
 	/**
 	 * 更新管理员角色缓存方法
 	 */
@@ -208,7 +209,7 @@ class cache_api {
 		setcache('role', $role,'commons');
 		return $infos;
 	}
-	
+
 	/**
 	 * 更新管理员角色缓存方法
 	 */
@@ -227,7 +228,7 @@ class cache_api {
 		setcache('role_siteid', $sitelist,'commons');
 		return $sitelist;
 	}
-	
+
 	/**
 	 * 更新url规则缓存方法
 	 */
@@ -240,7 +241,7 @@ class cache_api {
 		setcache('urlrules_detail',$datas,'commons');
 		setcache('urlrules',$basic_data,'commons');
 	}
-	
+
 	/**
 	 * 更新模块缓存方法
 	 */
@@ -250,7 +251,7 @@ class cache_api {
 		setcache('modules', $modules, 'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新模型缓存方法
 	 */
@@ -282,7 +283,7 @@ class cache_api {
 		setcache('model', $model_array, 'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新模型字段缓存方法
 	 */
@@ -298,7 +299,7 @@ class cache_api {
 		setcache('model_field_'.$modelid,$field_array,'model');
 		return true;
 	}
-	
+
 	/**
 	 * 更新类别缓存方法
 	 */
@@ -315,7 +316,7 @@ class cache_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 更新工作流缓存方法
 	 */
@@ -328,7 +329,7 @@ class cache_api {
 		setcache('workflow_'.get_siteid(),$datas,'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新数据源缓存方法
 	 */
@@ -345,7 +346,7 @@ class cache_api {
 		}
 		return setcache('dbsource', $data, 'commons');
 	}
-	
+
 	/**
 	 * 更新会员组缓存方法
 	 */
@@ -354,7 +355,7 @@ class cache_api {
 		setcache('grouplist', $grouplist,'member');
 		return true;
 	}
-	
+
 	/**
 	 * 更新会员配置缓存方法
 	 */
@@ -365,7 +366,7 @@ class cache_api {
 		setcache('member_setting', $member_setting, 'member');
 		return true;
 	}
-	
+
 	/**
 	 * 更新会员模型缓存方法
 	 */
@@ -373,11 +374,11 @@ class cache_api {
 		define('MEMBER_MODEL_PATH',PC_PATH.'modules'.DIRECTORY_SEPARATOR.'member'.DIRECTORY_SEPARATOR.'fields'.DIRECTORY_SEPARATOR);
 		//模型缓存路径
 		define('MEMBER_CACHE_MODEL_PATH',PHPCMS_PATH.'caches'.DIRECTORY_SEPARATOR.'caches_model'.DIRECTORY_SEPARATOR.'caches_data'.DIRECTORY_SEPARATOR);
-		
+
 		$sitemodel_db = pc_base::load_model('sitemodel_model');
 		$data = $sitemodel_db->select(array('type'=>2), "*", 1000, 'sort', '', 'modelid');
 		setcache('member_model', $data, 'commons');
-		
+
 		require MEMBER_MODEL_PATH.'fields.inc.php';
 		//更新内容模型类：表单生成、入库、更新、输出
 		$classtypes = array('form','input','update','output');
@@ -393,10 +394,10 @@ class cache_api {
 			file_put_contents(MEMBER_CACHE_MODEL_PATH.'member_'.$classtype.'.class.php',$cache_data);
 			chmod(MEMBER_CACHE_MODEL_PATH.'member_'.$classtype.'.class.php',0777);
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * 更新会员模型字段缓存方法
 	 */
@@ -415,18 +416,18 @@ class cache_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 更新搜索配置缓存方法
 	 */
-	public function search_setting() {	
+	public function search_setting() {
 		$this->db = pc_base::load_model('module_model');
 		$setting = $this->db->get_one(array('module'=>'search'), 'setting');
 		$setting = string2array($setting['setting']);
 		setcache('search', $setting, 'search');
 		return true;
 	}
-	
+
 	/**
 	 * 更新搜索类型缓存方法
 	 */
@@ -443,7 +444,7 @@ class cache_api {
 				$search_model[$_value['modelid']]['sort'] = $_value['listorder'];
 			}
 			setcache('type_model_'.$siteid,$datas,'search');
-			$datas = array();	
+			$datas = array();
 			foreach($result_datas2 as $_key=>$_value) {
 				if($_value['modelid']) continue;
 				$datas[$_value['typedir']] = $_value['typeid'];
@@ -456,7 +457,7 @@ class cache_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 更新专题缓存方法
 	 */
@@ -469,7 +470,7 @@ class cache_api {
 		setcache('special', $specials, 'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新网站配置方法
 	 */
@@ -480,7 +481,7 @@ class cache_api {
 		setcache('common', $setting,'commons');
 		return true;
 	}
-	
+
 	/**
 	 * 更新数据源模型缓存方法
 	 */
@@ -498,7 +499,7 @@ class cache_api {
 		$module = "<?php\nreturn ".var_export($module, true).";\n?>";
 		return $file_size = pc_base::load_config('system','lock_ex') ? file_put_contents($filepath.'modules.php', $module, LOCK_EX) : file_put_contents($filepath.'modules.php', $module);
 	}
-	
+
 	/**
 	 * 根据数据库记录更新缓存
 	 */
@@ -535,7 +536,7 @@ class cache_api {
 			showmessage(L('part_cache_success'), '?m=admin&c=cache_all&a=init&page='.$_GET['page'].'&currpage='.$currpage.'&pages='.$pages.'&dosubmit=1',0);
 		}
 	}
-	
+
 	/**
 	 * 更新删除缓存文件方法
 	 */
