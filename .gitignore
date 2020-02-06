@@ -1,2 +1,7 @@
 .idea
 .vscode
+/install_package/caches/
+/install_package/html/
+/install_package/uploadfile/
+/install_package/phpsso_server/caches/
+/install_package/phpsso_server/uploadfile/
