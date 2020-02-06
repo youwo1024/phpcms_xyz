@@ -10,7 +10,7 @@
 defined('IN_PHPCMS') or exit('No permission resources.');
 
 class push_api {
- 	private $db, $pos_data; //数据调用属性
+ 	private $db, $db_content; //数据调用属性
 
 	public function __construct() {
 		$this->db = pc_base::load_model('position_model');  //加载数据模型
@@ -46,7 +46,7 @@ class push_api {
 		//组装数据
 		$param[0] = $data;
 		$param[0]['id'] = $id;
-		if ($undel==0) $pos_info = $this->position_del($catid, $id, $posid);
+		if ($undel==0) $this->position_del($catid, $id, $posid);
 		return $this->position_list($param, $arr, $expiration, $model) ? true : false;
 	}
 
@@ -105,8 +105,6 @@ class push_api {
 		if ($arr['dosubmit']) {
 			if (!$model) {
 				$model = 'content_model';
-			} else {
-				$model = $model;
 			}
 			$db = pc_base::load_model($model);
 			$modelid = intval($arr['modelid']);
@@ -119,14 +117,12 @@ class push_api {
 			$fulltext_array = getcache('model_field_'.$modelid,'model');
 			if (is_array($arr['posid']) && !empty($arr['posid']) && is_array($param) && !empty($param)) {
 				foreach ($arr['posid'] as $pid) {
-					$ext = $func_char = '';
 					$r = $this->db->get_one(array('posid'=>$pid), 'extention'); //检查推荐位是否启用了扩展字段
 					$ext = $r['extention'] ? $r['extention'] : '';
 					if ($ext) {
 						$ext = str_replace(array('\'', '"', ' '), '', $ext);
 						$func_char = strpos($ext, '(');
 						if ($func_char) {
-							$func_name = $param_k = $param_arr = '';
 							$func_name = substr($ext, 0, $func_char);
 							$param_k = substr($ext, $func_char+1, strrpos($ext, ')')-($func_char+1));
 							$param_arr = explode(',', $param_k);
@@ -138,7 +134,7 @@ class push_api {
 						$info['posid'] = $pid;
 						$info['module'] = $model == 'yp_content_model' ? 'yp' : 'content';
 						$info['modelid'] = $modelid;
-						$fields_arr = $fields_value = '';
+						$fields_arr = $fields_value = array();
 						foreach($fulltext_array AS $key=>$value){
 							$fields_arr[] = '{'.$key.'}';
 							$fields_value[] = $d[$key];
@@ -149,7 +145,6 @@ class push_api {
 						if ($ext) {
 							if ($func_name) {
 								foreach ($param_arr as $k => $v) {
-									$c_func_name = $c_param = $c_param_arr = $c_func_char = '';
 									$c_func_char = strpos($v, '(');
 									if ($c_func_char) {
 										$c_func_name = substr($v, 0, $c_func_char);
@@ -196,8 +191,7 @@ class push_api {
 			return true;
 
 		} else {
-			$infos = $info = array();
-			$where = '1';
+			$info = array();
 			$siteid = get_siteid();
 			$category = getcache('category_content_'.$siteid,'commons');
 			$positions = getcache('position', 'commons');
