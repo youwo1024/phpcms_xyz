@@ -1,5 +1,5 @@
 <?php
-defined('IN_PHPCMS') or exit('No permission resources.'); 
+defined('IN_PHPCMS') or exit('No permission resources.');
 pc_base::load_app_class('admin', 'admin', 0);
 class block_admin extends admin {
 	private $db, $siteid, $priv_db, $history_db, $roleid;
@@ -11,12 +11,11 @@ class block_admin extends admin {
 		$this->siteid = $this->get_siteid();
 		parent::__construct();
 	}
-	
+
 	public function init() {
 		$page = isset($_GET['page']) && intval($_GET['page']) ? intval($_GET['page']) : 1;
 		if ($_SESSION['roleid'] != 1) {
-			$offset = ($page-1) * 20;
-			$r = $this->priv_db->select(array('roleid'=>$this->roleid, 'siteid'=>$this->siteid),'blockid', $offset.',20');
+			$r = $this->priv_db->select(array('roleid'=>$this->roleid, 'siteid'=>$this->siteid),'blockid');
 			$blockid_list = array();
 			foreach ($r as $key=>$v) {
 				$blockid_list[$key] = $v['blockid'];
@@ -29,7 +28,7 @@ class block_admin extends admin {
 		$pages = $this->db->pages;
 		include $this->admin_tpl('block_list');
 	}
-	
+
 	public function add() {
 		$pos = isset($_GET['pos']) && trim($_GET['pos']) ? trim($_GET['pos']) : showmessage(L('illegal_operation'));
 		if (isset($_POST['dosubmit'])) {
@@ -60,7 +59,7 @@ class block_admin extends admin {
 			include $this->admin_tpl('block_add_edit');
 		}
 	}
-	
+
 	public function edit() {
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) :  showmessage(L('illegal_operation'));
 		if (!$data = $this->db->get_one(array('id'=>$id))) {
@@ -99,7 +98,7 @@ class block_admin extends admin {
 		}
 		include $this->admin_tpl('block_add_edit');
 	}
-	
+
 	public function del() {
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) :  showmessage(L('illegal_operation'));
 		if (!$data = $this->db->get_one(array('id'=>$id))) {
@@ -116,7 +115,7 @@ class block_admin extends admin {
 			showmessage(L('operation_failure'), HTTP_REFERER);
 		}
 	}
-	
+
 	public function block_update() {
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) :  showmessage(L('illegal_operation'), HTTP_REFERER);
 		//进行权限判断
@@ -177,7 +176,7 @@ class block_admin extends admin {
 			include $this->admin_tpl('block_update');
 		}
 	}
-	
+
 	public function public_visualization() {
 		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
 		$catid = isset($_GET['catid']) && intval($_GET['catid']) ? intval($_GET['catid']) : 0;
@@ -202,7 +201,7 @@ class block_admin extends admin {
 					$file = $cat['setting']['category_template'];
 				}
 				break;
-				
+
 			case 'list':
 				if($cat['type']==1) {
 					$file = $cat['setting']['page_template'];
@@ -210,23 +209,23 @@ class block_admin extends admin {
 					$file = $cat['setting']['list_template'];
 				}
 				break;
-				
+
 			case 'show':
 				$file = $cat['setting']['show_template'];
 				break;
-			
+
 			case 'index':
 				$sites = pc_base::load_app_class('sites', 'admin');
 				$sites_info = $sites->get_by_id($this->siteid);
 				$file = 'index';
 				$style = $sites_info['default_style'];
 				break;
-				
+
 			case 'page':
 				$file = $cat['setting']['page_template'];
 				break;
 		}
-		
+
 		pc_base::load_app_func('global','template');
 		ob_start();
 		include template('content', $file, $style);
@@ -234,7 +233,7 @@ class block_admin extends admin {
 		ob_clean();
 		echo visualization($html, $style, 'content', $file.'.html');
 	}
-	
+
 	public function public_view() {
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) :  exit('0');
 		if (!$data = $this->db->get_one(array('id'=>$id))) {
@@ -269,11 +268,11 @@ class block_admin extends admin {
 		   		 ob_clean();
 		   		 @unlink($filepath);
 		    }
-		   
+
 			exit('<script type="text/javascript">parent.showblock('.$id.', \''.str_replace("\r\n", '', $html).'\')</script>');
 		}
 	}
-	
+
 	public function public_name() {
 		$name = isset($_GET['name']) && trim($_GET['name']) ? (pc_base::load_config('system', 'charset') == 'gbk' ? iconv('utf-8', 'gbk', trim($_GET['name'])) : trim($_GET['name'])) : exit('0');
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) : '';
@@ -291,7 +290,7 @@ class block_admin extends admin {
 			exit('1');
 		}
 	}
-	
+
 	public function history_restore() {
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) :  showmessage(L('illegal_operation'), HTTP_REFERER);
 		if (!$data = $this->history_db->get_one(array('id'=>$id))) {
@@ -305,7 +304,7 @@ class block_admin extends admin {
 		}
 		showmessage(L('operation_success'), HTTP_REFERER);
 	}
-	
+
 	public function history_del() {
 		$id = isset($_GET['id']) && intval($_GET['id']) ? intval($_GET['id']) :  showmessage(L('illegal_operation'), HTTP_REFERER);
 		if (!$data = $this->history_db->get_one(array('id'=>$id))) {
@@ -314,7 +313,7 @@ class block_admin extends admin {
 		$this->history_db->delete(array('id'=>$id));
 		showmessage(L('operation_success'), HTTP_REFERER);
 	}
-	
+
 	public function public_search_content() {
 		$catid = isset($_GET['catid']) && intval($_GET['catid']) ? intval($_GET['catid']) :  '';
 		$posids = isset($_GET['posids']) && intval($_GET['posids']) ? intval($_GET['posids']) :  0;
