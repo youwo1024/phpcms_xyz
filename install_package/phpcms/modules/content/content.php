@@ -28,7 +28,7 @@ class content extends admin {
 			if(!$priv_datas) showmessage(L('permission_to_operate'),'blank');
 		}
 	}
-	
+
 	public function init() {
 		$show_header = $show_dialog  = $show_pc_hash = '';
 		if(isset($_GET['catid']) && $_GET['catid'] && $this->categorys[$_GET['catid']]['siteid']==$this->siteid) {
@@ -66,7 +66,7 @@ class content extends admin {
 			if(isset($_GET['reject'])) $status = 0;
 			$where = 'catid='.$catid.' AND status='.$status;
 			//搜索
-			
+
 			if(isset($_GET['start_time']) && $_GET['start_time']) {
 				$start_time = strtotime($_GET['start_time']);
 				$where .= " AND `inputtime` > '$start_time'";
@@ -92,7 +92,7 @@ class content extends admin {
 				$posids = $_GET['posids']==1 ? intval($_GET['posids']) : 0;
 				$where .= " AND `posids` = '$posids'";
 			}
-			
+
 			$datas = $this->db->listinfo($where,'id desc',$_GET['page']);
 			$pages = $this->db->pages;
 			$pc_hash = $_SESSION['pc_hash'];
@@ -130,9 +130,17 @@ class content extends admin {
 				//如果该栏目设置了工作流，那么必须走工作流设定
 				$setting = string2array($category['setting']);
 				$workflowid = $setting['workflowid'];
-				if($workflowid && $_POST['status']!=99) {
-					//如果用户是超级管理员，那么则根据自己的设置来发布
-					$_POST['info']['status'] = $_SESSION['roleid']==1 ? intval($_POST['status']) : 1;
+				if($workflowid) {
+					if ($_SESSION['roleid']==1) { //如果用户是超级管理员，那么则根据自己的设置来发布
+						$_POST['info']['status'] = intval($_POST['status']);
+					} else { //如果是免审核人员，那么则根据自己的设置来发布
+						$workflows = getcache('workflow_'.$this->siteid,'commons');
+						$workflows = $workflows[$workflowid];
+						$workflows_setting = string2array($workflows['setting']);
+						$nocheck_users = $workflows_setting['nocheck_users'];
+						$admin_username = param::get_cookie('admin_username');
+						$_POST['info']['status'] = !empty($nocheck_users) && in_array($admin_username, $nocheck_users) ? intval($_POST['status']) : 1;
+					}
 				} else {
 					$_POST['info']['status'] = 99;
 				}
@@ -147,7 +155,7 @@ class content extends admin {
 				$this->page_db = pc_base::load_model('page_model');
 				$style_font_weight = $_POST['style_font_weight'] ? 'font-weight:'.strip_tags($_POST['style_font_weight']) : '';
 				$_POST['info']['style'] = strip_tags($_POST['style_color']).';'.$style_font_weight;
-				
+
 				if($_POST['edit']) {
 					$this->page_db->update($_POST['info'],array('catid'=>$catid));
 				} else {
@@ -164,7 +172,7 @@ class content extends admin {
 
 			if(isset($_GET['catid']) && $_GET['catid']) {
 				$catid = $_GET['catid'] = intval($_GET['catid']);
-				
+
 				param::set_cookie('catid', $catid);
 				$category = $this->categorys[$catid];
 				if($category['type']==0) {
@@ -190,9 +198,9 @@ class content extends admin {
 				} else {
 					//单网页
 					$this->page_db = pc_base::load_model('page_model');
-					
+
 					$r = $this->page_db->get_one(array('catid'=>$catid));
-					
+
 					if($r) {
 						extract($r);
 						$style_arr = explode(';',$style);
@@ -207,7 +215,7 @@ class content extends admin {
 			header("Cache-control: private");
 		}
 	}
-	
+
 	public function edit() {
 			//设置cookie 在附件添加处调用
 			param::set_cookie('module', 'content');
@@ -230,9 +238,9 @@ class content extends admin {
 				$id = intval($_GET['id']);
 				if(!isset($_GET['catid']) || !$_GET['catid']) showmessage(L('missing_part_parameters'));
 				$catid = $_GET['catid'] = intval($_GET['catid']);
-				
+
 				$this->model = getcache('model', 'commons');
-				
+
 				param::set_cookie('catid', $catid);
 				$category = $this->categorys[$catid];
 				$modelid = $category['modelid'];
@@ -262,12 +270,12 @@ class content extends admin {
 			$modelid = $this->categorys[$catid]['modelid'];
 			$sethtml = $this->categorys[$catid]['sethtml'];
 			$siteid = $this->categorys[$catid]['siteid'];
-			
+
 			$html_root = pc_base::load_config('system','html_root');
 			if($sethtml) $html_root = '';
-			
+
 			$setting = string2array($this->categorys[$catid]['setting']);
-			$content_ishtml = $setting['content_ishtml']; 
+			$content_ishtml = $setting['content_ishtml'];
 			$this->db->set_model($modelid);
 			$this->hits_db = pc_base::load_model('hits_model');
 			$this->queue = pc_base::load_model('queue_model');
@@ -281,7 +289,7 @@ class content extends admin {
 			$this->content_check_db = pc_base::load_model('content_check_model');
 			$this->position_data_db = pc_base::load_model('position_data_model');
 			$this->search_db = pc_base::load_model('search_model');
-			//判断视频模块是否安装 
+			//判断视频模块是否安装
 			if (module_exists('video') && file_exists(PC_PATH.'model'.DIRECTORY_SEPARATOR.'video_content_model.class.php')) {
 				$video_content_db = pc_base::load_model('video_content_model');
 				$video_install = 1;
@@ -290,7 +298,7 @@ class content extends admin {
 			$search_model = getcache('search_model_'.$this->siteid,'search');
 			$typeid = $search_model[$modelid]['typeid'];
 			$this->url = pc_base::load_app_class('url', 'content');
-			
+
 			foreach($_POST['ids'] as $id) {
 				$r = $this->db->get_one(array('id'=>$id));
 				if($content_ishtml && !$r['islink']) {
@@ -333,13 +341,13 @@ class content extends admin {
 				if ($video_install ==1) {
 					$video_content_db->delete(array('contentid'=>$id, 'modelid'=>$modelid));
 				}
-				
+
 				//删除相关的评论,删除前应该判断是否还存在此模块
 				if(module_exists('comment')){
 					$commentid = id_encode('content_'.$catid, $id, $siteid);
 					$this->comment->del($commentid, $siteid, $id, $catid);
 				}
-				
+
  			}
 			//更新栏目统计
 			$this->db->cache_items();
@@ -354,7 +362,7 @@ class content extends admin {
 	public function pass() {
 		$admin_username = param::get_cookie('admin_username');
 		$catid = intval($_GET['catid']);
-		
+
 		if(!$catid) showmessage(L('missing_part_parameters'));
 		$category = $this->categorys[$catid];
 		$setting = string2array($category['setting']);
@@ -382,14 +390,14 @@ class content extends admin {
 				} else {
 					//工作流审核级别
 					$workflow_steps = $workflows['steps'];
-					
+
 					if($workflow_steps>$steps) {
 						$status = $steps+1;
 					} else {
 						$status = 99;
 					}
 				}
-				
+
 				$modelid = $this->categorys[$catid]['modelid'];
 				$this->db->set_model($modelid);
 				$this->db->search_db = pc_base::load_model('search_model');
@@ -475,7 +483,7 @@ class content extends admin {
 		$ajax_show = intval($cfg['category_ajax']);
 		$from = isset($_GET['from']) && in_array($_GET['from'],array('block')) ? $_GET['from'] : 'content';
 		$tree = pc_base::load_sys_class('tree');
-		if($from=='content' && $_SESSION['roleid'] != 1) {	
+		if($from=='content' && $_SESSION['roleid'] != 1) {
 			$this->priv_db = pc_base::load_model('category_priv_model');
 			$priv_result = $this->priv_db->select(array('action'=>'init','roleid'=>$_SESSION['roleid'],'siteid'=>$this->siteid,'is_admin'=>1));
 			$priv_catids = array();
@@ -575,7 +583,7 @@ class content extends admin {
 			}
 		}
 	}
-	
+
 	/**
 	 * 图片裁切
 	 */
@@ -601,7 +609,7 @@ class content extends admin {
 			showmessage(L('please_select_modelid'));
 		} else {
 			$page = intval($_GET['page']);
-			
+
 			$modelid = intval($_GET['modelid']);
 			$this->db->set_model($modelid);
 			$where = '';
@@ -610,7 +618,7 @@ class content extends admin {
 				$where .= "catid='$catid'";
 			}
 			$where .= $where ?  ' AND status=99' : 'status=99';
-			
+
 			if(isset($_GET['keywords'])) {
 				$keywords = trim($_GET['keywords']);
 				$field = $_GET['field'];
@@ -655,16 +663,16 @@ class content extends admin {
 	public function public_preview() {
 		$catid = intval($_GET['catid']);
 		$id = intval($_GET['id']);
-		
+
 		if(!$catid || !$id) showmessage(L('missing_part_parameters'),'blank');
 		$page = intval($_GET['page']);
 		$page = max($page,1);
 		$CATEGORYS = getcache('category_content_'.$this->get_siteid(),'commons');
-		
+
 		if(!isset($CATEGORYS[$catid]) || $CATEGORYS[$catid]['type']!=0) showmessage(L('missing_part_parameters'),'blank');
 		define('HTML', true);
 		$CAT = $CATEGORYS[$catid];
-		
+
 		$siteid = $CAT['siteid'];
 		$MODEL = getcache('model','commons');
 		$modelid = $CAT['modelid'];
@@ -679,7 +687,7 @@ class content extends admin {
 		//再次重新赋值，以数据库为准
 		$catid = $CATEGORYS[$r['catid']]['catid'];
 		$modelid = $CATEGORYS[$catid]['modelid'];
-		
+
 		require_once CACHE_MODEL_PATH.'content_output.class.php';
 		$content_output = new content_output($modelid,$catid,$CATEGORYS);
 		$data = $content_output->get($rs);
@@ -689,7 +697,7 @@ class content extends admin {
 		$allow_visitor = 1;
 		//SEO
 		$SEO = seo($siteid, $catid, $title, $description);
-		
+
 		define('STYLE',$CAT['setting']['template_list']);
 		if(isset($rs['paginationtype'])) {
 			$paginationtype = $rs['paginationtype'];
@@ -730,7 +738,7 @@ class content extends admin {
 				}
 				//当不存在 [/page]时，则使用下面分页
 				$pages = content_pages($pagenumber,$page, $pageurls);
-				//判断[page]出现的位置是否在第一位 
+				//判断[page]出现的位置是否在第一位
 				if($CONTENT_POS<7) {
 					$content = $contents[$page];
 				} else {
@@ -782,7 +790,7 @@ class content extends admin {
 	 */
 	public function public_checkall() {
 		$page = isset($_GET['page']) && intval($_GET['page']) ? intval($_GET['page']) : 1;
-		
+
 		$show_header = '';
 		$workflows = getcache('workflow_'.$this->siteid,'commons');
 		$datas = array();
@@ -833,11 +841,11 @@ class content extends admin {
 			}
 		}
 		$this->content_check_db = pc_base::load_model('content_check_model');
-		$datas = $this->content_check_db->listinfo($sql,'inputtime DESC',$page);		
+		$datas = $this->content_check_db->listinfo($sql,'inputtime DESC',$page);
 		$pages = $this->content_check_db->pages;
 		include $this->admin_tpl('content_checkall');
 	}
-	
+
 	/**
 	 * 批量移动文章
 	 */
@@ -902,7 +910,7 @@ class content extends admin {
 			include $this->admin_tpl('content_remove');
 		}
 	}
-	
+
 	/**
 	 * 同时发布到其他栏目
 	 */
@@ -911,7 +919,7 @@ class content extends admin {
 		$sitelist = getcache('sitelist','commons');
 		$siteid = $_GET['siteid'];
 		include $this->admin_tpl('add_othors');
-		
+
 	}
 	/**
 	 * 同时发布到其他栏目 异步加载栏目
@@ -933,7 +941,7 @@ class content extends admin {
 			}
 			if(empty($priv_catids)) return '';
 		}
-		
+
 		foreach($this->categorys as $r) {
 			if($r['siteid']!=$siteid || $r['type']!=0) continue;
 			if($_SESSION['roleid'] != 1 && !in_array($r['catid'],$priv_catids)) {
@@ -955,10 +963,10 @@ class content extends admin {
 		$categorys = $tree->get_tree(0, $str);
 		echo $categorys;
 	}
-	
+
 	public function public_sub_categorys() {
 		$cfg = getcache('common','commons');
-		$ajax_show = intval(abs($cfg['category_ajax']));	
+		$ajax_show = intval(abs($cfg['category_ajax']));
 		$catid = intval($_POST['root']);
 		$modelid = intval($_POST['modelid']);
 		$this->categorys = getcache('category_content_'.$this->siteid,'commons');
@@ -1001,7 +1009,7 @@ class content extends admin {
 						break;
 				}
 			$data = $tree->creat_sub_json($catid,$strs);
-		}		
+		}
 		echo $data;
 	}
 
@@ -1010,7 +1018,7 @@ class content extends admin {
 	 */
 	public function clear_data() {
 		//清理数据涉及到的数据表
-		
+
 		if ($_POST['dosubmit']) {
 			set_time_limit(0);
 			$models = array('category', 'content', 'hits', 'search', 'position_data', 'video_content', 'video_store', 'comment');
@@ -1089,7 +1097,7 @@ class content extends admin {
 									//}
 								}
 							}
-							
+
 						} elseif ($t=='comment') {
 							$comment_db = pc_base::load_model('comment_data_model');
 							for($i=1;;$i++) {
