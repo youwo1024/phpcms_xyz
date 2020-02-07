@@ -149,6 +149,10 @@ switch($step)
 		break;
 
 	case '5': //配置帐号 （MYSQL帐号、管理员帐号、）
+		copy(CACHE_PATH.'configs/database_default.php', CACHE_PATH.'configs/database.php');
+		copy(CACHE_PATH.'configs/system_default.php', CACHE_PATH.'configs/system.php');
+		copy(PHPCMS_PATH.'phpsso_server/caches/configs/database_default.php', PHPCMS_PATH.'phpsso_server/caches/configs/database.php');
+		copy(PHPCMS_PATH.'phpsso_server/caches/configs/system_default.php', PHPCMS_PATH.'phpsso_server/caches/configs/system.php');
 		$database = pc_base::load_config('database');
 		$testdata = $_POST['testdata'];
 		extract($database['default']);
