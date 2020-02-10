@@ -81,10 +81,10 @@ var pc_hash = '<?php echo $_SESSION['pc_hash']?>'
         foreach($array as $_value) {
         	if($_value['id']==10) {
         		echo '<li id="_M'.$_value['id'].'" class="on top_menu"><a href="javascript:_M('.$_value['id'].',\'?m='.$_value['m'].'&c='.$_value['c'].'&a='.$_value['a'].'\')" hidefocus="true" style="outline:none;">'.L($_value['name']).'</a></li>';
-        		
+
         	} else {
         		echo '<li id="_M'.$_value['id'].'" class="top_menu"><a href="javascript:_M('.$_value['id'].',\'?m='.$_value['m'].'&c='.$_value['c'].'&a='.$_value['a'].'\')"  hidefocus="true" style="outline:none;">'.L($_value['name']).'</a></li>';
-        	}      	
+        	}
         }
         ?>
             <li class="tab_web"><a href="javascript:;"><span><?php echo $currentsite['name']?></span></a></li>
@@ -133,7 +133,7 @@ var pc_hash = '<?php echo $_SESSION['pc_hash']?>'
 </ul>
 </div>
 <div class="scroll"><a href="javascript:;" class="per" title="使用鼠标滚轴滚动侧栏" onclick="menuScroll(1);"></a><a href="javascript:;" class="next" title="使用鼠标滚轴滚动侧栏" onclick="menuScroll(2);"></a></div>
-<script type="text/javascript"> 
+<script type="text/javascript">
 if(!Array.prototype.map)
 Array.prototype.map = function(fn,scope) {
   var result = [],ri = 0;
@@ -154,7 +154,7 @@ return ["Height","Width"].map(function(name){
 window.onload = function (){
 	if(!+"\v1" && !document.querySelector) { // for IE6 IE7
 	  document.body.onresize = resize;
-	} else { 
+	} else {
 	  window.onresize = resize;
 	}
 	function resize() {
@@ -167,7 +167,7 @@ function wSize(){
 	var str=getWindowSize();
 	var strs= new Array(); //定义一数组
 	strs=str.toString().split(","); //字符分割
-	var heights = strs[0]-150,Body = $('body');$('#rightMain').height(heights);   
+	var heights = strs[0]-150,Body = $('body');$('#rightMain').height(heights);
 	//iframe.height = strs[0]-46;
 	if(strs[1]<980){
 		$('.header').css('width',980+'px');
@@ -180,10 +180,10 @@ function wSize(){
 		Body.attr('scroll','no');
 		Body.addClass('objbody');
 	}
-	
+
 	var openClose = $("#rightMain").height()+39;
 	$('#center_frame').height(openClose+9);
-	$("#openClose").height(openClose+30);	
+	$("#openClose").height(openClose+30);
 	$("#Scroll").height(openClose-20);
 	windowW();
 }
@@ -307,7 +307,7 @@ function _MP(menuid,targetUrl) {
 		$("#current_pos").html(data+'<span id="current_pos_attr"></span>');
 	});
 	$("#current_pos").data('clicknum', 1);
-	show_help(targetUrl);
+	// show_help(targetUrl);
 }
 
 function show_help(targetUrl) {
@@ -320,7 +320,7 @@ function show_help(targetUrl) {
 			$.each(data, function(i,item){
 				str += '<a href="'+item.url+'" target="_blank">'+item.title+'</a>';
 			});
-			
+
 			str += '<a class="panel-delete" href="javascript:;" onclick="$(\'#help\').slideUp(\'slow\')"></a>';
 			$('#help').html(str);
 		}
@@ -407,7 +407,7 @@ $(document).bind('keydown', 'return', function(evt){check_screenlock();return fa
     Scroll = document.getElementById('Scroll');
     // IE6/IE7/IE8/IE10/IE11/Opera 10+/Safari5+
     addEvent(Scroll, 'mousewheel', function(event){
-        event = window.event || event ;  
+        event = window.event || event ;
 		if(event.wheelDelta <= 0 || event.detail > 0) {
 				Scroll.scrollTop = Scroll.scrollTop + 29;
 			} else {
@@ -424,7 +424,7 @@ $(document).bind('keydown', 'return', function(evt){check_screenlock();return fa
 				Scroll.scrollTop = Scroll.scrollTop - 29;
 		}
     }, false);
-	
+
 })();
 function menuScroll(num){
 	var Scroll = document.getElementById('Scroll');
@@ -450,7 +450,7 @@ function _Site_M(project) {
 	if (!project){
 		project = 0;
 	}
-	$.ajaxSettings.async = false; 
+	$.ajaxSettings.async = false;
 	$.getJSON('index.php', {m:'admin', c:'index', a:'public_set_model', 'site_model':project, 'time':Math.random()}, function (data){
 		$.each(data, function(i, n){
 			$('#_M'+n).show();
