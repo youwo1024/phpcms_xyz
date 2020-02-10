@@ -3,7 +3,7 @@
  *  模板解析缓存
  */
 final class template_cache {
-	
+
 	/**
 	 * 编译模板
 	 *
@@ -12,7 +12,7 @@ final class template_cache {
 	 * @param $istag	是否为标签模板
 	 * @return unknown
 	 */
-	
+
 	public function template_compile($module, $template, $style = 'default') {
 		if(strpos($module, '/')=== false) {
 		$tplfile = $_tpl = PC_PATH.'templates'.DIRECTORY_SEPARATOR.$style.DIRECTORY_SEPARATOR.$module.DIRECTORY_SEPARATOR.$template.'.html';
@@ -43,7 +43,7 @@ final class template_cache {
 		chmod ( $compiledtplfile, 0777 );
 		return $strlen;
 	}
-	
+
 	/**
 	 * 更新模板缓存
 	 *
@@ -58,7 +58,7 @@ final class template_cache {
 		chmod ($compiledtplfile, 0777);
 		return $strlen;
 	}
-	
+
 
 	/**
 	 * 解析模板
@@ -108,7 +108,7 @@ final class template_cache {
 	}
 	public static function pc_tag_callback($matches) {
 		return self::pc_tag($matches[1],$matches[2], $matches[0]);;
-	}	
+	}
 	/**
 	 * 解析PC标签
 	 * @param string $op 操作方式
@@ -147,13 +147,13 @@ final class template_cache {
 							$str .= '$'.$return.' = json_decode($json, true);';
 						}
 					break;
-					
+
 				case 'xml':
 						$str .= '$xml = pc_base::load_sys_class(\'xml\');';
 						$str .= '$xml_data = @file_get_contents(\''.$datas['url'].'\');';
 						$str .= '$'.$return.' = $xml->xml_unserialize($xml_data);';
 					break;
-					
+
 				case 'get':
 						$str .= 'pc_base::load_sys_class("get_model", "model", 0);';
 						if ($datas['dbsource']) {
@@ -180,11 +180,11 @@ final class template_cache {
 							$sql = 'SELECT COUNT(*) as count FROM ('.$datas['sql'].') T';
 							$str .= '$r = $get_db->sql_query("'.$sql.'");$s = $get_db->fetch_next();$pages=pages($s[\'count\'], $page, $pagesize, $urlrule);';
 						}
-						
-						
+
+
 						$str .= '$r = $get_db->sql_query("'.$datas['sql'].' LIMIT '.$limit.'");while(($s = $get_db->fetch_next()) != false) {$a[] = $s;}$'.$return.' = $a;unset($a);';
 					break;
-					
+
 				case 'block':
 					$str .= '$block_tag = pc_base::load_app_class(\'block_tag\', \'block\');';
 					$str .= 'echo $block_tag->pc_tag('.self::arr_to_html($datas).');';
@@ -193,7 +193,7 @@ final class template_cache {
 		} else {
 			if (!isset($action) || empty($action)) return false;
 			if (module_exists($op) && file_exists(PC_PATH.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.$op.DIRECTORY_SEPARATOR.'classes'.DIRECTORY_SEPARATOR.$op.'_tag.class.php')) {
-				$str .= '$'.$op.'_tag = pc_base::load_app_class("'.$op.'_tag", "'.$op.'");if (method_exists($'.$op.'_tag, \''.$action.'\')) {';	
+				$str .= '$'.$op.'_tag = pc_base::load_app_class("'.$op.'_tag", "'.$op.'");if (method_exists($'.$op.'_tag, \''.$action.'\')) {';
 				if (isset($start) && intval($start)) {
 					$datas['limit'] = intval($start).','.$num;
 				} else {
@@ -206,11 +206,12 @@ final class template_cache {
 					$datas['limit'] = '$offset.",".$pagesize';
 					$datas['action'] = $action;
 					$str .= '$'.$op.'_total = $'.$op.'_tag->count('.self::arr_to_html($datas).');';
+                    $str .= 'if(!defined(\'IN_ADMIN\') && $page > 1 && ceil($'.$op.'_total/$pagesize) < $page){ob_end_clean();header("HTTP/1.1 404 Not Found");header("Status: 404 Not Found");include template("'.$op.'", "404");ob_end_flush();exit;}';
 					$str .= '$pages = pages($'.$op.'_total, $page, $pagesize, $urlrule);';
-				}
+                }
 				$str .= '$'.$return.' = $'.$op.'_tag->'.$action.'('.self::arr_to_html($datas).');';
 				$str .= '}';
-			} 
+			}
 		}
 		if (!empty($cache) && !isset($page)) {
 			$str .= 'if(!empty($'.$return.')){setcache($tag_cache_name, $'.$return.', \'tpl_data\');}';
@@ -218,14 +219,14 @@ final class template_cache {
 		}
 		return "<"."?php if(defined('IN_ADMIN')  && !defined('HTML')) {echo \"<div class=\\\"admin_piao\\\" pc_action=\\\"".$op."\\\" data=\\\"".$str_datas."\\\"><a href=\\\"javascript:void(0)\\\" class=\\\"admin_piao_edit\\\">".($op=='block' ? L('block_add') : L('edit'))."</a>\";}".$str."?".">";
 	}
-	
+
 	/**
 	 * PC标签结束
 	 */
 	static private function end_pc_tag() {
 		return '<?php if(defined(\'IN_ADMIN\') && !defined(\'HTML\')) {echo \'</div>\';}?>';
 	}
-	
+
 	/**
 	 * 转换数据为HTML代码
 	 * @param array $data 数组
