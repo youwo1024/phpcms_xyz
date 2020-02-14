@@ -1,5 +1,5 @@
 <?php
-defined('IN_ADMIN') or exit('No permission resources.'); 
+defined('IN_ADMIN') or exit('No permission resources.');
 include $this->admin_tpl('header', 'admin');
 ?>
 
@@ -32,7 +32,7 @@ include $this->admin_tpl('header', 'admin');
 <!--
 	$(function(){
 		$.formValidator.initConfig({formid:"myform",autotip:true,onerror:function(msg,obj){window.top.art.dialog({content:msg,lock:true,width:'200',height:'50'}, function(){this.close();$(obj).focus();})}});
-		$("#url").formValidator({onshow:"<?php echo L("input").L("data_address")?>",onfocus:"<?php echo L("input").L("data_address")?>"}).inputValidator({min:1,onerror:"<?php echo L("input").L("data_address")?>"}).regexValidator({regexp:"^http:\/\/(.*)",param:'i',onerror:"<?php echo L('data_address_reg_sg')?>"});
+		$("#url").formValidator({onshow:"<?php echo L("input").L("data_address")?>",onfocus:"<?php echo L("input").L("data_address")?>"}).inputValidator({min:1,onerror:"<?php echo L("input").L("data_address")?>"}).regexValidator({regexp:"^http(s?):\/\/(.*)",param:'i',onerror:"<?php echo L('data_address_reg_sg')?>"});
 		$("#cache").formValidator({onshow:"<?php echo L("input").L('buffer_time')?>",onfocus:"<?php echo L("input").L('buffer_time')?>"}).regexValidator({regexp:"num1",datatype:'enum',param:'i',onerror:"<?php echo L('cache_time_can_only_be_positive')?>"});
 	})
 //-->

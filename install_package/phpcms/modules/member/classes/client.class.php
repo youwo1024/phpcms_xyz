@@ -13,7 +13,7 @@ class client {
 		$this->ps_auth_key = $ps_auth_key;
 		$this->ps_vsersion = $ps_vsersion;
 	}
-	
+
 	/**
 	 * 用户注册
 	 * @param string $username 	用户名
@@ -27,7 +27,7 @@ class client {
 		if(!$this->_is_email($email)) {
 			return -3;
 		}
-		 
+
 		return $this->_ps_send('register', array('username'=>$username, 'password'=>$password, 'email'=>$email, 'regip'=>$regip, 'random'=>$random));
 	}
 	/**
@@ -48,7 +48,7 @@ class client {
 		}
 		return $return;
 	}
-	
+
 	/**
 	 * 同步登陆
 	 * @param string $uid
@@ -67,7 +67,7 @@ class client {
 	public function ps_member_synlogout() {
 		return $this->_ps_send('synlogout', array());
 	}
-	
+
 	/**
 	 * 编辑用户
 	 * @param string $username		用户名
@@ -96,7 +96,7 @@ class client {
 	public function ps_deleteavatar($uid) {
 		return $this->_ps_send('deleteavatar', array('uid'=>$uid));
 	}
-	
+
 	/**
 	 * 获取用户信息
 	 * @param $mix 用户id/用户名/email
@@ -139,7 +139,7 @@ class client {
 		}
 		return $res;
 	}
-	
+
 	/**
 	 * 检查用户是否可以注册
 	 * @param string $username
@@ -157,7 +157,7 @@ class client {
 	public function ps_checkemail($email) {
 		return $this->_ps_send('checkemail', array('email'=>$email));
 	}
-	
+
 	/**
 	 * 获取应用列表信息
 	 */
@@ -185,7 +185,7 @@ class client {
 	public function ps_changecredit($uid, $from, $toappid, $to, $credit) {
 		return $this->_ps_send('changecredit', array('uid'=>$uid, 'from'=>$from, 'toappid'=>$toappid, 'to'=>$to, 'credit'=>$credit));
 	}
-	
+
 	/**
 	 * 根据phpsso uid获取头像url
 	 * @param int $uid 用户id
@@ -331,7 +331,7 @@ EOF;
 		$auth_s = 'v='.$this->ps_vsersion.'&appid='.APPID.'&data='.urlencode($this->sys_auth($s));
 		return $auth_s;
 	}
-	
+
 	/**
 	 * 发送数据
 	 * @param $action 操作
@@ -340,7 +340,7 @@ EOF;
 	private function _ps_send($action, $data = null) {
  		return $this->_ps_post($this->ps_api_url."/index.php?m=phpsso&c=index&a=".$action, 500000, $this->auth_data($data));
 	}
-	
+
 	/**
 	 *  post数据
 	 *  @param string $url		post的url
@@ -352,13 +352,14 @@ EOF;
 	 *  @param bool $block		是否为阻塞模式
 	 *  @return string			返回字符串
 	 */
-	
+
 	private function _ps_post($url, $limit = 0, $post = '', $cookie = '', $ip = '', $timeout = 15, $block = true) {
 		$return = '';
 		$matches = parse_url($url);
 		$host = $matches['host'];
 		$path = $matches['path'] ? $matches['path'].($matches['query'] ? '?'.$matches['query'] : '') : '/';
-		$port = !empty($matches['port']) ? $matches['port'] : 80;
+		$protocol = strtolower($matches['scheme']);
+		$port = !empty($matches['port']) ? $matches['port'] : ($protocol == 'https' ? 443 : 80);
 		$siteurl = $this->_get_url();
 		if($post) {
 			$out = "POST $path HTTP/1.1\r\n";
@@ -383,19 +384,19 @@ EOF;
 			$out .= "Connection: Close\r\n";
 			$out .= "Cookie: $cookie\r\n\r\n";
 		}
-		$fp = @fsockopen(($ip ? $ip : $host), $port, $errno, $errstr, $timeout);
-		if(!$fp) return '';
-	
+		$fp = @fsockopen(($protocol == 'https' ? 'ssl://' : '').($ip ? $ip : $host), $port, $errno, $errstr, $timeout);
+        if(!$fp) return '';
+
 		stream_set_blocking($fp, $block);
 		stream_set_timeout($fp, $timeout);
 		@fwrite($fp, $out);
 		$status = stream_get_meta_data($fp);
-	
-		if($status['timed_out']) return '';	
+
+		if($status['timed_out']) return '';
 		while (!feof($fp)) {
-			if(($header = @fgets($fp)) && ($header == "\r\n" ||  $header == "\n"))  break;				
+			if(($header = @fgets($fp)) && ($header == "\r\n" ||  $header == "\n"))  break;
 		}
-		
+
 		$stop = false;
 		while(!feof($fp) && !$stop) {
 			$data = fread($fp, ($limit == 0 || $limit > 8192 ? 8192 : $limit));
@@ -406,14 +407,14 @@ EOF;
 			}
 		}
 		@fclose($fp);
-		
+
 		//部分虚拟主机返回数值有误，暂不确定原因，过滤返回数据格式
 		$return_arr = explode("\n", $return);
 		if(isset($return_arr[1])) {
 			$return = trim($return_arr[1]);
 		}
 		unset($return_arr);
-		
+
 		return $return;
 	}
 
@@ -429,8 +430,8 @@ EOF;
 			return $string;
 		}
 	}
-	
-	
+
+
 	/**
 	 * 获取当前页面完整URL地址
 	 */
@@ -463,7 +464,7 @@ EOF;
 		$string = str_replace('\\','',$string);
 		return $string;
 	}
-	
+
 	/**
 	 * 判断email格式是否正确
 	 * @param $string email

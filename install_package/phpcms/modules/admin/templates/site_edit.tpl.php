@@ -8,7 +8,7 @@ include $this->admin_tpl('header');
 		$.formValidator.initConfig({formid:"myform",autotip:true,onerror:function(msg,obj){window.top.art.dialog({content:msg,lock:true,width:'200',height:'50'}, function(){this.close();$(obj).focus();})}});
 		$("#name").formValidator({onshow:"<?php echo L("input").L('site_name')?>",onfocus:"<?php echo L("input").L('site_name')?>"}).inputValidator({min:1,onerror:"<?php echo L("input").L('site_name')?>"}).ajaxValidator({type : "get",url : "",data :"m=admin&c=site&a=public_name&siteid=<?php echo $data['siteid']?>",datatype : "html",async:'true',success : function(data){	if( data == "1" ){return true;}else{return false;}},buttons: $("#dosubmit"),onerror : "<?php echo L('site_name').L('exists')?>",onwait : "<?php echo L('connecting')?>"}).defaultPassed();
 		$("#dirname").formValidator({onshow:"<?php echo L("input").L('site_dirname')?>",onfocus:"<?php echo L("input").L('site_dirname')?>"}).inputValidator({min:1,onerror:"<?php echo L("input").L('site_dirname')?>"}).regexValidator({regexp:"username",datatype:"enum",param:'i',onerror:"<?php echo L('site_dirname_err_msg')?>"}).ajaxValidator({type : "get",url : "",data :"m=admin&c=site&a=public_dirname&siteid=<?php echo $data['siteid']?>",datatype : "html",async:'false',success : function(data){	if( data == "1" ){return true;}else{return false;}},buttons: $("#dosubmit"),onerror : "<?php echo L('site_dirname').L('exists')?>",onwait : "<?php echo L('connecting')?>"}).defaultPassed();
-		$("#domain").formValidator({onshow:"<?php echo L('site_domain_ex')?>",onfocus:"<?php echo L('site_domain_ex')?>",tipcss:{width:'300px'},empty:false}).inputValidator({onerror:"<?php echo L('site_domain_ex')?>"}).regexValidator({regexp:"http:\/\/(.+)\/$",onerror:"<?php echo L('site_domain_ex2')?>"});
+		$("#domain").formValidator({onshow:"<?php echo L('site_domain_ex')?>",onfocus:"<?php echo L('site_domain_ex')?>",tipcss:{width:'300px'},empty:false}).inputValidator({onerror:"<?php echo L('site_domain_ex')?>"}).regexValidator({regexp:"http(s?):\/\/(.+)\/$",onerror:"<?php echo L('site_domain_ex2')?>"});
 		$("#template").formValidator({onshow:"<?php echo L('style_name_point')?>",onfocus:"<?php echo L('select_at_least_1')?>"}).inputValidator({min:1,onerror:"<?php echo L('select_at_least_1')?>"});
 		$('#release_point').formValidator({onshow:"<?php echo L('publishing_sites_to_other_servers')?>",onfocus:"<?php echo L('choose_release_point')?>"}).inputValidator({max:4,onerror:"<?php echo L('most_choose_four')?>"});
 		$('#default_style_input').formValidator({tipid:"default_style_msg",onshow:"<?php echo L('please_select_a_style_and_select_the_template')?>",onfocus:"<?php echo L('please_select_a_style_and_select_the_template')?>"}).inputValidator({min:1,onerror:"<?php echo L('please_choose_the_default_style')?>"});
@@ -78,8 +78,8 @@ include $this->admin_tpl('header');
   <tr>
     <th width="80" valign="top"><?php echo L('style_name')?>：</th>
     <td class="y-bg"> <select name="template[]" size="3" id="template" multiple title="<?php echo L('ctrl_more_selected')?>" onchange="default_list()">
-    
-    	<?php 
+
+    	<?php
 	    	$default_template_list =  array();
 	    	if (isset($data['template'])) {
 	    		$dirname = explode(',',$data['template']);
@@ -97,7 +97,7 @@ include $this->admin_tpl('header');
   <tr>
     <th width="80" valign="top"><?php echo L('default_style')?>：<input type="hidden" name="default_style" id="default_style_input" value="<?php echo $data['default_style']?>"></th>
     <td class="y-bg"><span id="default_style">
-	<?php 
+	<?php
 		if(is_array($dirname) && !empty($dirname)) foreach ($dirname as $v) {
 			echo '<label><input type="radio" name="default_style_radio" value="'.$v.'" onclick="$(\'#default_style_input\').val(this.value);" '.($data['default_style']==$v ? 'checked' : '').'>'.$default_template_list[$v].'</label>';
 		}
@@ -132,7 +132,7 @@ function default_list() {
   <tr>
     <th width="130" valign="top"><?php echo L('site_att_allow_ext')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[upload_allowext]" id="upload_allowext" size="50" value="<?php echo $setting['upload_allowext']?>"/></td>
-  </tr>  
+  </tr>
     <tr>
     <th><?php echo L('site_att_gb_check')?></th>
     <td class="y-bg"><?php echo $this->check_gd()?></td>
@@ -142,7 +142,7 @@ function default_list() {
 	  <input class="radio_style" name="setting[watermark_enable]" value="1" <?php echo $setting['watermark_enable']==1 ? 'checked="checked"' : ''?> type="radio"> <?php echo L('site_att_watermark_open')?>&nbsp;&nbsp;&nbsp;&nbsp;
 	  <input class="radio_style" name="setting[watermark_enable]" value="0" <?php echo $setting['watermark_enable']==0 ? 'checked="checked"' : ''?> type="radio"> <?php echo L('site_att_watermark_close')?>
      </td>
-  </tr>    
+  </tr>
   <tr>
     <th><?php echo L('site_att_watermark_condition')?></th>
     <td class="y-bg"><?php echo L('site_att_watermark_minwidth')?>
@@ -152,15 +152,15 @@ function default_list() {
   <tr>
     <th width="130" valign="top"><?php echo L('site_att_watermark_img')?></th>
     <td class="y-bg"><input type="text" name="setting[watermark_img]" id="watermark_img" size="30" value="<?php echo $setting['watermark_img'] ? $setting['watermark_img'] : 'mark.gif' ?>"/><?php echo L('site_att_watermark_img_desc')?></td>
-  </tr> 
+  </tr>
    <tr>
     <th width="130" valign="top"><?php echo L('site_att_watermark_pct')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[watermark_pct]" id="watermark_pct" size="10" value="<?php echo $setting['watermark_pct'] ? $setting['watermark_pct'] : '100' ?>" />  <?php echo L('site_att_watermark_pct_desc')?></td>
-  </tr> 
+  </tr>
    <tr>
     <th width="130" valign="top"><?php echo L('site_att_watermark_quality')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[watermark_quality]" id="watermark_quality" size="10" value="<?php echo $setting['watermark_quality'] ? $setting['watermark_quality'] : '80' ?>" /> <?php echo L('site_att_watermark_quality_desc')?></td>
-  </tr> 
+  </tr>
    <tr>
     <th width="130" valign="top"><?php echo L('site_att_watermark_pos')?></th>
     <td>

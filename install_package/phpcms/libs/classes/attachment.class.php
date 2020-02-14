@@ -1,4 +1,4 @@
-<?php 
+<?php
 class attachment {
 	var $contentid;
 	var $module;
@@ -12,12 +12,12 @@ class attachment {
 	var $upload_root;
 	var $siteid;
 	var $site = array();
-	
+
 	function __construct($module='', $catid = 0,$siteid = 0,$upload_dir = '') {
 		$this->catid = intval($catid);
 		$this->siteid = intval($siteid)== 0 ? 1 : intval($siteid);
 		$this->module = $module ? $module : 'content';
-		pc_base::load_sys_func('dir');		
+		pc_base::load_sys_func('dir');
 		pc_base::load_sys_class('image','','0');
 		$this->upload_root = pc_base::load_config('system','upload_path');
 		$this->upload_func = 'copy';
@@ -42,7 +42,7 @@ class attachment {
 			$alowexts = $site_setting['upload_allowext'];
 		}
 		$fn = $_GET['CKEditorFuncNum'] ? $_GET['CKEditorFuncNum'] : '1';
-			
+
 		$this->field = $field;
 		$this->savepath = $this->upload_root.$this->upload_dir.date('Y/md/');
 		$this->alowexts = $alowexts;
@@ -89,7 +89,7 @@ class attachment {
 			$fileext = fileext($file['name']);
 			if($file['error'] != 0) {
 				$this->error = $file['error'];
-				return false;				
+				return false;
 			}
 			if(!preg_match("/^(".$this->alowexts.")$/", $fileext)) {
 				$this->error = '10';
@@ -116,8 +116,8 @@ class attachment {
 				$file['name'] = iconv("utf-8",CHARSET,$file['name']);
 				$file['name'] = safe_replace($file['name']);
 				$uploadedfile = array('filename'=>$file['name'], 'filepath'=>$filepath, 'filesize'=>$file['size'], 'fileext'=>$fileext, 'fn'=>$file['fn']);
-				$thumb_enable = is_array($thumb_setting) && ($thumb_setting[0] > 0 || $thumb_setting[1] > 0 ) ? 1 : 0;	
-				$image = new image($thumb_enable,$this->siteid);				
+				$thumb_enable = is_array($thumb_setting) && ($thumb_setting[0] > 0 || $thumb_setting[1] > 0 ) ? 1 : 0;
+				$image = new image($thumb_enable,$this->siteid);
 				if($thumb_enable) {
 					$image->thumb($savefile,'',$thumb_setting[0],$thumb_setting[1]);
 				}
@@ -129,7 +129,7 @@ class attachment {
 		}
 		return $aids;
 	}
-	
+
 	/**
 	 * 附件下载
 	 * Enter description here ...
@@ -138,7 +138,7 @@ class attachment {
 	 * @param $watermark 是否加入水印
 	 * @param $ext 下载扩展名
 	 * @param $absurl 绝对路径
-	 * @param $basehref 
+	 * @param $basehref
 	 */
 	function download($field, $value,$watermark = '0',$ext = 'gif|jpg|jpeg|bmp|png', $absurl = '', $basehref = '')
 	{
@@ -187,7 +187,7 @@ class attachment {
 			}
 		}
 		return str_replace($oldpath, $newpath, $value);
-	}	
+	}
 	/**
 	 * 附件删除方法
 	 * @param $where 删除sql语句
@@ -203,7 +203,7 @@ class attachment {
 		}
 		return $this->att_db->delete($where);
 	}
-	
+
 	/**
 	 * 附件添加如数据库
 	 * @param $uploadedfile 附件信息
@@ -224,7 +224,7 @@ class attachment {
 		$this->uploadedfiles[] = $uploadedfile;
 		return $aid;
 	}
-	
+
 	function set_userid($userid) {
 		$this->userid = $userid;
 	}
@@ -249,7 +249,7 @@ class attachment {
 	 * 返回附件大小
 	 * @param $filesize 图片大小
 	 */
-	
+
 	function size($filesize) {
 		if($filesize >= 1073741824) {
 			$filesize = round($filesize / 1073741824 * 100) / 100 . ' GB';
@@ -271,7 +271,7 @@ class attachment {
 	function isuploadedfile($file) {
 		return is_uploaded_file($file) || is_uploaded_file(str_replace('\\\\', '\\', $file));
 	}
-	
+
 	/**
 	* 补全网址
 	*
@@ -303,11 +303,11 @@ class attachment {
 		$pos = strpos($surl,'#');
 		if($pos>0) $surl = substr($surl,0,$pos);
 		if($surl[0]=='/') {
-			$okurl = 'http://'.$HomeUrl.'/'.$surl;
+			$okurl = SITE_PROTOCOL.$HomeUrl.'/'.$surl;
 		} elseif($surl[0] == '.') {
 			if(strlen($surl)<=2) return '';
-			elseif($surl[0]=='/') {
-				$okurl = 'http://'.$BaseUrlPath.'/'.substr($surl,2,strlen($surl)-2);
+			elseif($surl[1]=='/') {
+				$okurl = SITE_PROTOCOL.$BaseUrlPath.'/'.substr($surl,2);
 			} else {
 				$urls = explode('/',$surl);
 				foreach($urls as $u) {
@@ -320,7 +320,7 @@ class attachment {
 				if(count($urls) <= $pathStep)
 				return '';
 				else {
-					$pstr = 'http://';
+					$pstr = SITE_PROTOCOL;
 					for($i=0;$i<count($urls)-$pathStep;$i++) {
 						$pstr .= $urls[$i].'/';
 					}
@@ -330,19 +330,19 @@ class attachment {
 		} else {
 			$preurl = strtolower(substr($surl,0,6));
 			if(strlen($surl)<7)
-			$okurl = 'http://'.$BaseUrlPath.'/'.$surl;
+			$okurl = SITE_PROTOCOL.$BaseUrlPath.'/'.$surl;
 			elseif($preurl=="http:/"||$preurl=='ftp://' ||$preurl=='mms://' || $preurl=="rtsp://" || $preurl=='thunde' || $preurl=='emule:'|| $preurl=='ed2k:/')
 			$okurl = $surl;
 			else
-			$okurl = 'http://'.$BaseUrlPath.'/'.$surl;
+			$okurl = SITE_PROTOCOL.$BaseUrlPath.'/'.$surl;
 		}
 		$preurl = strtolower(substr($okurl,0,6));
 		if($preurl=='ftp://' || $preurl=='mms://' || $preurl=='rtsp://' || $preurl=='thunde' || $preurl=='emule:'|| $preurl=='ed2k:/') {
 			return $okurl;
 		} else {
-			$okurl = preg_replace('/^(http:\/\/)/i','',$okurl);
+			$okurl = preg_replace('/^(http(s?):\/\/)/i','',$okurl);
 			$okurl = preg_replace('/\/{1,}/i','/',$okurl);
-			return 'http://'.$okurl;
+			return SITE_PROTOCOL.$okurl;
 		}
 	}
 
@@ -355,7 +355,7 @@ class attachment {
 		$site_setting = $this->_get_site_setting($this->siteid);
 		return ($uploads < $site_setting['upload_maxsize']);
 	}
-	
+
 	/**
 	 * 返回错误信息
 	 */
@@ -376,17 +376,17 @@ class attachment {
 		12 => L('att_upload_not_allow'),
 		13 => L('att_upload_limit_time'),
 		);
-		
+
 		return iconv(CHARSET,"utf-8",$UPLOAD_ERROR[$this->error]);
 	}
-	
+
 	/**
 	 * ck编辑器返回
-	 * @param $fn 
+	 * @param $fn
 	 * @param $fileurl 路径
 	 * @param $message 显示信息
 	 */
-	
+
 	function mkhtml($fn,$fileurl,$message) {
 		$str='<script type="text/javascript">window.parent.CKEDITOR.tools.callFunction('.$fn.', \''.$fileurl.'\', \''.$message.'\');</script>';
 		exit($str);
@@ -398,7 +398,7 @@ class attachment {
 	function uploaderror($id = 0)	{
 		file_put_contents(PHPCMS_PATH.'xxx.txt', $id);
 	}
-	
+
 	/**
 	 * 获取站点配置信息
 	 * @param  $siteid 站点id
