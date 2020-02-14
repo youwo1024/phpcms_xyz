@@ -11,7 +11,7 @@ class member_menu extends admin {
 		parent::__construct();
 		$this->db = pc_base::load_model('member_menu_model');
 	}
-	
+
 	function manage() {
 		$tree = pc_base::load_sys_class('tree');
 		$tree->icon = array('&nbsp;&nbsp;&nbsp;│ ','&nbsp;&nbsp;&nbsp;├─ ','&nbsp;&nbsp;&nbsp;└─ ');
@@ -42,18 +42,14 @@ class member_menu extends admin {
 			$this->db->insert($_POST['info']);
 			//开发过程中用于自动创建语言包
 			$file = PC_PATH.'languages'.DIRECTORY_SEPARATOR.'zh-cn'.DIRECTORY_SEPARATOR.'member_menu.lang.php';
+            $key = $_POST['info']['name'];
 			if(file_exists($file)) {
 				$content = file_get_contents($file);
-				$content = substr($content,0,-2);
-				$key = $_POST['info']['name'];
-				$data = $content."\$LANG['$key'] = '$_POST[language]';\r\n?>";
-				file_put_contents($file,$data);
+				$data = $content."\$LANG['$key'] = '$_POST[language]';\r\n";
 			} else {
-				
-				$key = $_POST['info']['name'];
-				$data = "<?php\r\n\$LANG['$key'] = '$_POST[language]';\r\n?>";
-				file_put_contents($file,$data);
+				$data = "<?php\r\n\$LANG['$key'] = '$_POST[language]';\r\n";
 			}
+			file_put_contents($file,$data);
 			//结束
 			showmessage(L('add_success'));
 		} else {
@@ -68,7 +64,7 @@ class member_menu extends admin {
 			$str  = "<option value='\$id' \$selected>\$spacer \$cname</option>";
 			$tree->init($array);
 			$select_categorys = $tree->get_tree(0, $str);
-			
+
 			include $this->admin_tpl('member_menu');
 		}
 	}
@@ -84,10 +80,10 @@ class member_menu extends admin {
  		$str = "\$LANG['".$menu['name']."'] = '".$LANG[$menu['name']]."';\r\n";
  		$content = str_replace($str,'',$content);
 		file_put_contents($file,$content);
-		
+
  		showmessage(L('operation_success'));
 	}
-	
+
 	function edit() {
 		if(isset($_POST['dosubmit'])) {
 			$id = intval($_POST['id']);
@@ -98,16 +94,14 @@ class member_menu extends admin {
 			$key = $_POST['info']['name'];
 			if(!isset($LANG[$key])) {
 				$content = file_get_contents($file);
-				$content = substr($content,0,-2);
-				$data = $content."\$LANG['$key'] = '$_POST[language]';\r\n?>";
-				file_put_contents($file,$data);
+				$data = $content."\$LANG['$key'] = '$_POST[language]';\r\n";
 			} elseif(isset($LANG[$key]) && $LANG[$key]!=$_POST['language']) {
 				$content = file_get_contents($file);
 				$LANG[$key] = safe_replace($LANG[$key]);
-				$content = str_replace($LANG[$key],$_POST['language'],$content);
-				file_put_contents($file,$content);
+				$data = str_replace($LANG[$key],$_POST['language'],$content);
 			}
-			
+			file_put_contents($file,$data);
+
 			//结束语言文件修改
 			showmessage(L('operation_success'));
 		} else {
@@ -128,7 +122,7 @@ class member_menu extends admin {
 			include $this->admin_tpl('member_menu');
 		}
 	}
-	
+
 	/**
 	 * 排序
 	 */
