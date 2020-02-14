@@ -18,7 +18,7 @@
 		if(in_array($ext,$ext_arr)) return 'statics/images/ext/'.$ext.'.'.$type;
 		else return 'statics/images/ext/blank.'.$type;
 	}
-	
+
 	/**
 	 * 附件目录列表，暂时没用
 	 * @param $dirpath 目录路径
@@ -31,7 +31,7 @@
 		$list['local'] = str_replace(array(PC_PATH, DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR), array('',DIRECTORY_SEPARATOR), $filepath);
 		return $list;
 	}
-	
+
 	/**
 	 * flash上传初始化
 	 * 初始化swfupload上传中需要的参数
@@ -51,7 +51,7 @@
 		$file_size_limit = $site_setting['upload_maxsize'];
 		$sess_id = SYS_TIME;
 		$admin_url = pc_base::load_config('system','admin_url');
-		$upload_path = empty($admin_url) ? APP_PATH : 'http://'.$admin_url.'/';
+		$upload_path = empty($admin_url) ? APP_PATH : SITE_PROTOCOL.$admin_url.'/';
 		$swf_auth_key = md5(pc_base::load_config('system','auth_key').$sess_id);
 		$init =  'var swfu = \'\';
 		$(document).ready(function(){
@@ -87,7 +87,7 @@
 			});
 		})';
 		return $init;
-	}		
+	}
 	/**
 	 * 获取站点配置信息
 	 * @param  $siteid 站点id
@@ -120,7 +120,7 @@
 		$arr['thumb_height'] = intval($args[4]);
 		$arr['watermark_enable'] = ($args[5]=='') ? 1 : intval($args[5]);
 		return $arr;
-	}	
+	}
 	/**
 	 * 判断是否为图片
 	 */
@@ -129,7 +129,7 @@
 		$ext = fileext($file);
 		return in_array($ext,$ext_arr) ? $ext_arr :false;
 	}
-	
+
 	/**
 	 * 判断是否为视频
 	 */

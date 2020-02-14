@@ -11,14 +11,14 @@ defined('IN_PHPCMS') or exit('No permission resources.');
 
 pc_base::load_sys_func('dir');
 class module_api {
-	
+
 	private $db, $m_db, $installdir, $uninstaldir, $module, $isall;
 	public $error_msg = '';
-	
+
 	public function __construct() {
 		$this->db = pc_base::load_model('module_model');
 	}
-	
+
 	/**
 	 * 模块安装
 	 * @param string $module 模块名
@@ -27,7 +27,7 @@ class module_api {
 		define('INSTALL', true);
 		if ($module) $this->module = $module;
 		$this->installdir = PC_PATH.'modules'.DIRECTORY_SEPARATOR.$this->module.DIRECTORY_SEPARATOR.'install'.DIRECTORY_SEPARATOR;
-		
+
 		$this->check();
 		$models = @require($this->installdir.'model.php');
 		if (!is_array($models) || empty($models)) {
@@ -50,15 +50,13 @@ class module_api {
 				$file = PC_PATH.'languages'.DIRECTORY_SEPARATOR.pc_base::load_config('system', 'lang').DIRECTORY_SEPARATOR.'system_menu.lang.php';
 				if(file_exists($file)) {
 					$content = file_get_contents($file);
-					$content = substr($content,0,-2);
 					$data = '';
 					foreach ($language as $key => $l) {
 						if (L($key, '', 'system_menu')==$key) {
 							$data .= "\$LANG['".$key."'] = '".$l."';\r\n";
 						}
 					}
-					$data = $content.$data."?>";
-					file_put_contents($file,$data);
+					file_put_contents($file,$content.$data);
 				} else {
 					foreach ($language as $key =>$l) {
 						if (L($key, '', 'system_menu')==$key) {
@@ -92,7 +90,7 @@ class module_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 检查安装目录
 	 * @param string $module 模块名
@@ -108,7 +106,7 @@ class module_api {
 			if (dir_create(PC_PATH.'languages'.DIRECTORY_SEPARATOR.pc_base::load_config('system', 'lang').DIRECTORY_SEPARATOR.'test_create_dir')) {
 				sleep(1);
 				dir_delete(PC_PATH.'languages'.DIRECTORY_SEPARATOR.pc_base::load_config('system', 'lang').DIRECTORY_SEPARATOR.'test_create_dir');
-				
+
 			} else {
 				$this->error_msg = L('lang_dir_no_write');
 				return false;
@@ -145,7 +143,7 @@ class module_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 模块卸载
 	 * @param string $module 模块名
@@ -201,7 +199,7 @@ class module_api {
 		$this->db->delete(array('module'=>$this->module));
 		return true;
 	}
-	
+
 	/**
 	 * 执行mysql.sql文件，创建数据表等
 	 * @param string $sql sql语句
@@ -220,7 +218,7 @@ class module_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 处理sql语句，执行替换前缀都功能。
 	 * @param string $sql 原始的sql，将一些大众的部分替换成私有的

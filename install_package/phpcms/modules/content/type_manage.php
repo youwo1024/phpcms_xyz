@@ -12,7 +12,7 @@ class type_manage extends admin {
 		$this->model = getcache('model','commons');
 		$this->category_db = pc_base::load_model('category_model');
 	}
-	
+
 	public function init () {
 		$datas = array();
 		$result_datas = $this->db->listinfo(array('siteid'=>$this->siteid,'module'=>'content'),'listorder ASC,typeid DESC',$_GET['page']);
@@ -80,7 +80,7 @@ class type_manage extends admin {
 			}
 			//删除取消的
 			$catids_string = $_POST['catids_string'];
-			if($catids_string) {	
+			if($catids_string) {
 				$catids_string = explode(',', $catids_string);
 				foreach ($catids_string as $catid) {
 					$r = $this->category_db->get_one(array('catid'=>$catid),'usable_type');
@@ -134,7 +134,7 @@ class type_manage extends admin {
 		$this->cache();//更新类别缓存，按站点
 		exit('1');
 	}
-	
+
 	/**
 	 * 排序
 	 */
@@ -149,7 +149,7 @@ class type_manage extends admin {
 			showmessage(L('operation_failure'));
 		}
 	}
-	
+
 	public function cache() {
 		$datas = array();
 		$result_datas = $this->db->select(array('siteid'=>$this->siteid,'module'=>'content'),'*',1000,'listorder ASC,typeid ASC');
@@ -214,7 +214,7 @@ class type_manage extends admin {
 			$r['show_ruleid'] = $setting['show_ruleid'];
 			$r['workflowid'] = $setting['workflowid'];
 			$r['isdomain'] = '0';
-			if(strpos($r['url'], 'http://') === false) {
+            if(strpos($r['url'], 'http://') === false && strpos($r['url'], 'https://') === false) {
 				$r['url'] = siteurl($r['siteid']).$r['url'];
 			} elseif ($r['ishtml']) {
 				$r['isdomain'] = '1';

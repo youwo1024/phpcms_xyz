@@ -5,18 +5,18 @@ include $this->admin_tpl('header');?>
 <!--
 	$(function(){
 		SwapTab('setting','on','',5,<?php echo $_GET['tab'] ? $_GET['tab'] : '1'?>);
-		$.formValidator.initConfig({formid:"myform",autotip:true,onerror:function(msg,obj){window.top.art.dialog({content:msg,lock:true,width:'200',height:'50'}, function(){this.close();$(obj).focus();})}});		
+		$.formValidator.initConfig({formid:"myform",autotip:true,onerror:function(msg,obj){window.top.art.dialog({content:msg,lock:true,width:'200',height:'50'}, function(){this.close();$(obj).focus();})}});
 		$("#js_path").formValidator({onshow:"<?php echo L('setting_input').L('setting_js_path')?>",onfocus:"<?php echo L('setting_js_path').L('setting_end_with_x')?>"}).inputValidator({onerror:"<?php echo L('setting_js_path').L('setting_input_error')?>"}).regexValidator({regexp:"(.+)\/$",onerror:"<?php echo L('setting_js_path').L('setting_end_with_x')?>"});
 		$("#css_path").formValidator({onshow:"<?php echo L('setting_input').L('setting_css_path')?>",onfocus:"<?php echo L('setting_css_path').L('setting_end_with_x')?>"}).inputValidator({onerror:"<?php echo L('setting_css_path').L('setting_input_error')?>"}).regexValidator({regexp:"(.+)\/$",onerror:"<?php echo L('setting_css_path').L('setting_end_with_x')?>"});
-		
+
 		$("#img_path").formValidator({onshow:"<?php echo L('setting_input').L('setting_img_path')?>",onfocus:"<?php echo L('setting_img_path').L('setting_end_with_x')?>"}).inputValidator({onerror:"<?php echo L('setting_img_path').L('setting_input_error')?>"}).regexValidator({regexp:"(.+)\/$",onerror:"<?php echo L('setting_img_path').L('setting_end_with_x')?>"});
-			
+
 		$("#upload_url").formValidator({onshow:"<?php echo L('setting_input').L('setting_upload_url')?>",onfocus:"<?php echo L('setting_upload_url').L('setting_end_with_x')?>"}).inputValidator({onerror:"<?php echo L('setting_upload_url').L('setting_input_error')?>"}).regexValidator({regexp:"(.+)\/$",onerror:"<?php echo L('setting_upload_url').L('setting_end_with_x')?>"});
-		
-		$("#errorlog_size").formValidator({onshow:"<?php echo L('setting_errorlog_hint')?>",onfocus:"<?php echo L('setting_input').L('setting_error_log_size')?>"}).inputValidator({onerror:"<?php echo L('setting_error_log_size').L('setting_input_error')?>"}).regexValidator({regexp:"num",datatype:"enum",onerror:"<?php echo L('setting_errorlog_type')?>"});	
-			
-		$("#phpsso_api_url").formValidator({onshow:"<?php echo L('setting_phpsso_type')?>",onfocus:"<?php echo L('setting_phpsso_type')?>",tipcss:{width:'300px'},empty:false}).inputValidator({onerror:"<?php echo L('setting_phpsso_type')?>"}).regexValidator({regexp:"http:\/\/(.+)[^/]$",onerror:"<?php echo L('setting_phpsso_type')?>"});
-		
+
+		$("#errorlog_size").formValidator({onshow:"<?php echo L('setting_errorlog_hint')?>",onfocus:"<?php echo L('setting_input').L('setting_error_log_size')?>"}).inputValidator({onerror:"<?php echo L('setting_error_log_size').L('setting_input_error')?>"}).regexValidator({regexp:"num",datatype:"enum",onerror:"<?php echo L('setting_errorlog_type')?>"});
+
+		$("#phpsso_api_url").formValidator({onshow:"<?php echo L('setting_phpsso_type')?>",onfocus:"<?php echo L('setting_phpsso_type')?>",tipcss:{width:'300px'},empty:false}).inputValidator({onerror:"<?php echo L('setting_phpsso_type')?>"}).regexValidator({regexp:"http(s?):\/\/(.+)[^/]$",onerror:"<?php echo L('setting_phpsso_type')?>"});
+
 		$("#phpsso_appid").formValidator({onshow:"<?php echo L('input').L('setting_phpsso_appid')?>",onfocus:"<?php echo L('input').L('setting_phpsso_appid')?>"}).regexValidator({regexp:"^\\d{1,8}$",onerror:"<?php echo L('setting_phpsso_appid').L('must_be_number')?>"});
 		$("#phpsso_version").formValidator({onshow:"<?php echo L('input').L('setting_phpsso_version')?>",onfocus:"<?php echo L('input').L('setting_phpsso_version')?>"}).regexValidator({regexp:"^\\d{1,8}$",onerror:"<?php echo L('setting_phpsso_version').L('must_be_number')?>"});
 		$("#phpsso_auth_key").formValidator({onshow:"<?php echo L('input').L('setting_phpsso_auth_key')?>",onfocus:"<?php echo L('input').L('setting_phpsso_auth_key')?>"}).regexValidator({regexp:"^\\w{32}$",onerror:"<?php echo L('setting_phpsso_auth_key').L('must_be_32_w')?>"});
@@ -48,13 +48,13 @@ include $this->admin_tpl('header');?>
     <td class="y-bg">
     <input name="setconfig[gzip]" value="1"  type="radio"  <?php echo ($gzip=='1') ? ' checked' : ''?>> <?php echo L('setting_yes')?>&nbsp;&nbsp;&nbsp;&nbsp;
 	<input name="setconfig[gzip]" value="0" type="radio"  <?php echo ($gzip=='0') ? ' checked' : ''?>> <?php echo L('setting_no')?></td>
-  </tr> 
+  </tr>
   <tr>
     <th width="120"><?php echo L('setting_attachment_stat')?></th>
     <td class="y-bg">
     <input name="setconfig[attachment_stat]" value="1"  type="radio"  <?php echo ($attachment_stat=='1') ? ' checked' : ''?>> <?php echo L('setting_yes')?>&nbsp;&nbsp;&nbsp;&nbsp;
 	<input  name="setconfig[attachment_stat]" value="0" type="radio"  <?php echo ($attachment_stat=='0') ? ' checked' : ''?>> <?php echo L('setting_no')?>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo L('setting_attachment_stat_desc')?></td>
-  </tr> 	
+  </tr>
   <tr>
     <th width="120"><?php echo L('setting_js_path')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[js_path]" id="js_path" size="50" value="<?php echo JS_PATH?>" /></td>
@@ -62,7 +62,7 @@ include $this->admin_tpl('header');?>
   <tr>
     <th width="120"><?php echo L('setting_css_path')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[css_path]" id="css_path" size="50" value="<?php echo CSS_PATH?>"/></td>
-  </tr> 
+  </tr>
   <tr>
     <th width="120"><?php echo L('setting_img_path')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[img_path]" id="img_path" size="50" value="<?php echo IMG_PATH?>" /></td>
@@ -88,11 +88,11 @@ include $this->admin_tpl('header');?>
 	  <input name="setconfig[errorlog]" value="1" type="radio" <?php echo ($errorlog=='1') ? ' checked' : ''?>> <?php echo L('setting_yes')?>&nbsp;&nbsp;&nbsp;&nbsp;
 	  <input name="setconfig[errorlog]" value="0" type="radio" <?php echo ($errorlog=='0') ? ' checked' : ''?>> <?php echo L('setting_no')?>
      </td>
-  </tr> 
+  </tr>
   <tr>
     <th><?php echo L('setting_error_log_size')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[errorlog_size]" id="errorlog_size" size="5" value="<?php echo $errorlog_size?>"/> MB</td>
-  </tr>     
+  </tr>
 
   <tr>
     <th><?php echo L('setting_maxloginfailedtimes')?></th>
@@ -111,7 +111,7 @@ include $this->admin_tpl('header');?>
 		<TD><?php echo L('admin_url_tips')?></TD>
     </TR>
     </TABLE> </td>
-  </tr> 
+  </tr>
 </table>
 </div>
 <div id="div_setting_3" class="contentList pad-10 hidden">
@@ -121,15 +121,15 @@ include $this->admin_tpl('header');?>
     <td class="y-bg">
     <input name="setconfig[phpsso]" value="1" type="radio"  <?php echo ($phpsso=='1') ? ' checked' : ''?>> <?php echo L('setting_yes')?>&nbsp;&nbsp;&nbsp;&nbsp;
 	 <input name="setconfig[phpsso]" value="0" type="radio"  <?php echo ($phpsso=='0') ? ' checked' : ''?>> <?php echo L('setting_no')?></td>
-  </tr> 
+  </tr>
   <tr>
     <th><?php echo L('setting_phpsso_appid')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[phpsso_appid]" id="phpsso_appid" size="30" value="<?php echo $phpsso_appid ?>"/></td>
-  </tr> 
+  </tr>
   <tr>
     <th><?php echo L('setting_phpsso_phpsso_api_url')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[phpsso_api_url]" id="phpsso_api_url" size="50" value="<?php echo $phpsso_api_url ?>"/></td>
-  </tr>  
+  </tr>
    <tr>
     <th><?php echo L('setting_phpsso_auth_key')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[phpsso_auth_key]" id="phpsso_auth_key" size="50" value="<?php echo $phpsso_auth_key ?>"/></td>
@@ -137,7 +137,7 @@ include $this->admin_tpl('header');?>
    <tr>
     <th><?php echo L('setting_phpsso_version')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setconfig[phpsso_version]" id="phpsso_version" size="2" value="<?php echo $phpsso_version ?>"/></td>
-  </tr>      
+  </tr>
   </table>
 </div>
 <div id="div_setting_4" class="contentList pad-10 hidden">
@@ -146,33 +146,33 @@ include $this->admin_tpl('header');?>
     <th width="120"><?php echo L('mail_type')?></th>
     <td class="y-bg">
      <input name="setting[mail_type]" checkbox="mail_type" value="1" onclick="showsmtp(this)" type="radio" <?php echo $mail_type==1 ? ' checked' : ''?>> <?php echo L('mail_type_smtp')?>
-    <input name="setting[mail_type]" checkbox="mail_type" value="0" onclick="showsmtp(this)" type="radio" <?php echo $mail_type==0 ? ' checked' : ''?> <?php if(substr(strtolower(PHP_OS), 0, 3) == 'win') echo 'disabled'; ?>/> <?php echo L('mail_type_mail')?> 
+    <input name="setting[mail_type]" checkbox="mail_type" value="0" onclick="showsmtp(this)" type="radio" <?php echo $mail_type==0 ? ' checked' : ''?> <?php if(substr(strtolower(PHP_OS), 0, 3) == 'win') echo 'disabled'; ?>/> <?php echo L('mail_type_mail')?>
 	</td>
   </tr>
   <tbody id="smtpcfg" style="<?php if($mail_type == 0) echo 'display:none'?>">
   <tr>
     <th><?php echo L('mail_server')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[mail_server]" id="mail_server" size="30" value="<?php echo $mail_server?>"/></td>
-  </tr>  
+  </tr>
   <tr>
     <th><?php echo L('mail_port')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[mail_port]" id="mail_port" size="30" value="<?php echo $mail_port?>"/></td>
-  </tr> 
+  </tr>
   <tr>
     <th><?php echo L('mail_from')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="setting[mail_from]" id="mail_from" size="30" value="<?php echo $mail_from?>"/></td>
-  </tr>   
+  </tr>
   <tr>
     <th><?php echo L('mail_auth')?></th>
     <td class="y-bg">
     <input name="setting[mail_auth]" checkbox="mail_auth" value="1" type="radio" <?php echo $mail_auth==1 ? ' checked' : ''?>> <?php echo L('mail_auth_open')?>
 	<input name="setting[mail_auth]" checkbox="mail_auth" value="0" type="radio" <?php echo $mail_auth==0 ? ' checked' : ''?>> <?php echo L('mail_auth_close')?></td>
-  </tr> 
+  </tr>
 
 	  <tr>
 	    <th><?php echo L('mail_user')?></th>
 	    <td class="y-bg"><input type="text" class="input-text" name="setting[mail_user]" id="mail_user" size="30" value="<?php echo $mail_user?>"/></td>
-	  </tr> 
+	  </tr>
 	  <tr>
 	    <th><?php echo L('mail_password')?></th>
 	    <td class="y-bg"><input type="password" class="input-text" name="setting[mail_password]" id="mail_password" size="30" value="<?php echo $mail_password?>"/></td>
@@ -182,7 +182,7 @@ include $this->admin_tpl('header');?>
   <tr>
     <th><?php echo L('mail_test')?></th>
     <td class="y-bg"><input type="text" class="input-text" name="mail_to" id="mail_to" size="30" value=""/> <input type="button" class="button" onClick="javascript:test_mail();" value="<?php echo L('mail_test_send')?>"></td>
-  </tr>           
+  </tr>
   </table>
 </div>
 
@@ -212,16 +212,16 @@ include $this->admin_tpl('header');?>
 	App key <input type="text" class="input-text" name="setconfig[qq_akey]" id="qq_akey" size="20" value="<?php echo $qq_akey ?>"/>
 	App secret key <input type="text" class="input-text" name="setconfig[qq_skey]" id="qq_skey" size="40" value="<?php echo $qq_skey ?>"/> <a href="http://open.t.qq.com/" target="_blank"><?php echo L('click_register')?></a>
 	</td>
-  </tr> 
+  </tr>
   <tr>
     <th><?php echo L('setting_connect_qqnew')?></th>
     <td class="y-bg">
 	App I D  &nbsp;<input type="text" class="input-text" name="setconfig[qq_appid]" id="qq_appid" size="20" value="<?php echo $qq_appid;?>"/>
-	App key <input type="text" class="input-text" name="setconfig[qq_appkey]" id="qq_appkey" size="40" value="<?php echo $qq_appkey;?>"/> 
+	App key <input type="text" class="input-text" name="setconfig[qq_appkey]" id="qq_appkey" size="40" value="<?php echo $qq_appkey;?>"/>
 	<?php echo L('setting_connect_qqcallback')?> <input type="text" class="input-text" name="setconfig[qq_callback]" id="qq_callback" size="40" value="<?php echo $qq_callback;?>"/>
 	<a href="http://connect.qq.com" target="_blank"><?php echo L('click_register')?></a>
 	</td>
-  </tr> 
+  </tr>
 
   </table>
 </div>

@@ -1,8 +1,8 @@
 {template "content","header"}
-<script type="text/javascript" src="{JS_PATH}formvalidator.js" charset="UTF-8"></script> 
+<script type="text/javascript" src="{JS_PATH}formvalidator.js" charset="UTF-8"></script>
 <script type="text/javascript" src="{JS_PATH}formvalidatorregex.js" charset="UTF-8"></script>
 <link href="{CSS_PATH}link.css" rel="stylesheet" type="text/css" />
-<link href="{CSS_PATH}table_form.css" rel="stylesheet" type="text/css" /> 
+<link href="{CSS_PATH}table_form.css" rel="stylesheet" type="text/css" />
 <!--main-->
 <div class="main">
 <!--left_bar-->
@@ -13,13 +13,13 @@
 <form action="{APP_PATH}index.php?m=link&c=index&a=register&siteid={$siteid}" method="post" name="myform" id="myform">
 <table cellspacing="1" cellpadding="0" class="table_form">
 <caption>申请友情链接</caption>
-<tbody><tr> 
+<tbody><tr>
 <th width='60'>链接类型</th>
 <td width="300"><input type="radio" onclick="$('#logolink').hide()" checked="checked" value="0" name="linktype" class="radio_style"> 文字链接
 <input type="radio" onclick="$('#logolink').show()" value="1" name="linktype" class="radio_style"> Logo链接
 </td>
 </tr>
-<tr> 
+<tr>
 <th>所属分类</th>
 <td>
 <select  style="width: 36%;" id="typeid" name="typeid">
@@ -30,15 +30,15 @@
 </select>
 </td>
 </tr>
-<tr> 
+<tr>
 <th>网站名称</th>
 <td><input type="text" value="" id="name" name="name" class="input-text"></td>
 </tr>
-<tr> 
+<tr>
 <th>网站地址</th>
 <td><input type="text" size="40" value="" name="url" id="url" class="input-text"></td>
 </tr>
-<tr style="display: none;" id="logolink"> 
+<tr style="display: none;" id="logolink">
 <th>Logo地址</th>
 <td><input type="text" size="40" value="" name="logo" id="logo" class="input-text"></td>
 </tr>
@@ -48,10 +48,10 @@
        <td><input name="code" type="text" id="code" size="10"  class="input-text"/> {form::checkcode('code_img','4','14',110,30)}</td>
 </tr>
 {/if}
-<tr> 
+<tr>
 <th></th>
 <td><input type="submit" value=" 申 请 " name="dosubmit" class="button"> <input type="reset" value=" 取 消 " name="reset" class="button"> </td>
-</tr> 
+</tr>
 </tbody></table>
 </form>
         </div>
@@ -71,7 +71,7 @@
 	            {/pc}
            </div>
         </div>
-         
+
         <div class="bk10"></div>
          <div class="box">
             <h5 class="title-2">本站LOGO：</h5>
@@ -96,26 +96,26 @@
 			{/pc}
            </div>
         </div>
-        
-        
+
+
     </div>
-    
-    
-    
+
+
+
 </div>
 <script type="text/javascript">
 <!--
 	$(function(){
 	$.formValidator.initConfig({autotip:true,formid:"myform",onerror:function(msg){}});
 	$("#name").formValidator({onshow:"请输入网站名称",onfocus:"请输入网站名称"}).inputValidator({min:1,max:999,onerror:"网站名称不能为空"});
- 	$("#url").formValidator({onshow:"请输入网站网址",onfocus:"请输入网站网址"}).inputValidator({min:1,onerror:"请输入网站网址"}).regexValidator({regexp:"^http:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&]*([^<>])*$",onerror:"格式应该为http://www.phpcms.cn/"})
+ 	$("#url").formValidator({onshow:"请输入网站网址",onfocus:"请输入网站网址"}).inputValidator({min:1,onerror:"请输入网站网址"}).regexValidator({regexp:"^http(s?):\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&]*([^<>])*$",onerror:"格式应该为http://www.phpcms.cn/"})
  	$("#code").formValidator({onshow:"请输入验证码",onfocus:"验证码不能为空"}).inputValidator({min:1,max:999,onerror:"验证码不能为空"}).ajaxValidator({
 	    type : "get",
 		url : "",
 		data :"m=pay&c=deposit&a=public_checkcode",
 		datatype : "html",
 		async:'false',
-		success : function(data){	
+		success : function(data){
             if(data == 1)
 			{
                 return true;
