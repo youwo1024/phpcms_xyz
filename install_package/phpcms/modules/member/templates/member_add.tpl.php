@@ -10,7 +10,7 @@ $(function(){
 	$("#username").formValidator({onshow:"<?php echo L('input').L('username')?>",onfocus:"<?php echo L('username').L('between_2_to_20')?>"}).inputValidator({min:2,max:20,onerror:"<?php echo L('username').L('between_2_to_20')?>"}).regexValidator({regexp:"ps_username",datatype:"enum",onerror:"<?php echo L('username').L('format_incorrect')?>"}).ajaxValidator({
 	    type : "get",
 		url : "",
-		data :"m=member&c=member&a=public_checkname_ajax",
+		data :"m=member&c=index&a=public_checkname_ajax",
 		datatype : "html",
 		async:'false',
 		success : function(data){
@@ -30,10 +30,10 @@ $(function(){
 	$("#email").formValidator({onshow:"<?php echo L('input').L('email')?>",onfocus:"<?php echo L('email').L('format_incorrect')?>",oncorrect:"<?php echo L('email').L('format_right')?>"}).inputValidator({min:2,max:32,onerror:"<?php echo L('email').L('between_2_to_32')?>"}).regexValidator({regexp:"email",datatype:"enum",onerror:"<?php echo L('email').L('format_incorrect')?>"}).ajaxValidator({
 	    type : "get",
 		url : "",
-		data :"m=member&c=member&a=public_checkemail_ajax",
+		data :"m=member&c=index&a=public_checkemail_ajax",
 		datatype : "html",
 		async:'false',
-		success : function(data){	
+		success : function(data){
             if( data == "1" ) {
                 return true;
 			} else {
@@ -71,19 +71,19 @@ $(function(){
 	<legend><?php echo L('basic_configuration')?></legend>
 	<table width="100%" class="table_form">
 		<tr>
-			<td width="80"><?php echo L('username')?></td> 
+			<td width="80"><?php echo L('username')?></td>
 			<td><input type="text" name="info[username]"  class="input-text" id="username"></input></td>
 		</tr>
 		<tr>
-			<td><?php echo L('password')?></td> 
+			<td><?php echo L('password')?></td>
 			<td><input type="password" name="info[password]" class="input-text" id="password" value=""></input></td>
 		</tr>
 		<tr>
-			<td><?php echo L('cofirmpwd')?></td> 
+			<td><?php echo L('cofirmpwd')?></td>
 			<td><input type="password" name="info[pwdconfirm]" class="input-text" id="pwdconfirm" value=""></input></td>
 		</tr>
 		<tr>
-			<td><?php echo L('nickname')?></td> 
+			<td><?php echo L('nickname')?></td>
 			<td><input type="text" name="info[nickname]" id="nickname" value="" class="input-text"></input></td>
 		</tr>
 		<tr>
@@ -107,7 +107,7 @@ $(function(){
 		<tr>
 			<td><?php echo L('point')?></td>
 			<td>
-			<input type="text" name="info[point]" value="" class="input-text" id="point" size="10"></input>
+			<input type="text" name="info[point]" value="0" class="input-text" id="point" size="10"></input>
 			</td>
 		</tr>
 		<tr>

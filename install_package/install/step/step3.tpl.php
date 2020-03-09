@@ -2,8 +2,7 @@
 <script type="text/javascript">
   $(document).ready(function() {
 	$.formValidator.initConfig({autotip:true,formid:"install",onerror:function(msg){}});
-  	$("input:radio[name='install_phpsso']").formValidator({relativeid:"install_phpsso_2",tipid:"aiguoTip",tipcss :{"left":"60px"},onshow:"请选择一个安装类型",onfocus:"请选择一个安装类型",oncorrect:"选择完成"}).inputValidator({min:1,max:1,onerror:"请选择一个安装类型"});
-	$("#sso_url").formValidator({onshow:"请输入phpsso地址，必须以'/'结束",onfocus:"请输入phpsso地址，必须以'/'结束",empty:false}).inputValidator({onerror:"地址必须以'/'结束"}).regexValidator({regexp:"http:\/\/(.+)\/$",onerror:"地址必须以'/'结束"});	
+	$("#sso_url").formValidator({onshow:"请输入phpsso地址，必须以'/'结束",onfocus:"请输入phpsso地址，必须以'/'结束",empty:false}).inputValidator({onerror:"地址必须以'/'结束"}).regexValidator({regexp:"http:\/\/(.+)\/$",onerror:"地址必须以'/'结束"});
   })
 </script>
 	<div class="body_box">
@@ -22,8 +21,9 @@
 <fieldset>
 	<legend>PHPSSO配置</legend>
 	<div class="content">
-    	<input type="radio" name="install_phpsso" id="install_phpsso_1" value="1" onclick="set_sso_hidden()">&nbsp;&nbsp;全新安装PHPCMS V9 (含 PHPSSO)<br/>
-        <input type="radio" name="install_phpsso" id="install_phpsso_2" value="2" onclick="set_sso()">&nbsp;&nbsp;仅安装PHPCMS V9 (手工指定已经安装的PHPSSO)
+    	<input type="radio" name="install_phpsso" id="install_phpsso_1" value="1" onclick="set_sso_hidden()" checked>&nbsp;&nbsp;全新安装PHPCMS V9 (含 PHPSSO)<br/>
+        <input type="radio" name="install_phpsso" id="install_phpsso_2" value="2" onclick="set_sso()">&nbsp;&nbsp;仅安装PHPCMS V9 (手工指定已经安装的PHPSSO)<br/>
+        <input type="radio" name="install_phpsso" id="install_phpsso_3" value="0" onclick="set_sso_hidden()">&nbsp;&nbsp;仅安装PHPCMS V9 (不安装PHPSSO)
     </div>
 	<div id="sso_cfg" class="d_n">
 		<ul>
@@ -32,7 +32,7 @@
 			<li>Phpsso密  码:<input type="password" name="sso[password]" value=""></li>
 		</ul>
 	</div>
-</fieldset>					
+</fieldset>
 <fieldset>
 	<legend>必选模块</legend>
 	<div class="content">
@@ -46,10 +46,10 @@
 	   <label><input type="checkbox" name="video" value="video" checked  disabled>视频模块</label>
     </div>
 </fieldset>
-		
+
 <fieldset>
 	<legend>可选模块</legend>
-	<div class="content"> 
+	<div class="content">
 <?php
 	$count = count($PHPCMS_MODULES['name']);
 	$j = 0;
@@ -88,5 +88,5 @@
 	}
 	function set_sso_hidden() {
 		$("#sso_cfg").hide();
-	}	
+	}
 </script>

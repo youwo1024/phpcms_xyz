@@ -16,7 +16,7 @@
                 </div>
                 <div class="bg_b"></div>
             </div>
-            <div class="btn_box"><a href="javascript:history.go(-1);" class="s_btn pre">上一步</a><a href="javascript:void(0);"  onClick="$('#install').submit();return false;" class="x_btn pre" id="finish">安装中..</a></div>            
+            <div class="btn_box"><a href="javascript:history.go(-1);" class="s_btn pre">上一步</a><a href="javascript:void(0);"  onClick="$('#install').submit();return false;" class="x_btn pre" id="finish">安装中..</a></div>
         </div>
     </div>
     <div id="hiddenop"></div>
@@ -24,6 +24,7 @@
 	<input type="hidden" name="module" id="module" value="<?php echo $module?>" />
 	<input type="hidden" name="testdata" id="testdata" value="<?php echo $testdata?>" />
 	<input type="hidden" id="selectmod" name="selectmod" value="<?php echo $selectmod?>" />
+    <input type="hidden" id="install_phpsso" name="install_phpsso" value="<?php echo $install_phpsso?>" />
 	<input type="hidden" name="step" value="7">
 	</form>
 </body>
@@ -78,7 +79,7 @@ function reloads() {
 			   } else if(msg.length>20) {
 				   $('#installmessage').append("<font color='#ff0000'>错误信息：</font>"+msg);
 			   } else {
-				   $('#installmessage').append(setting[m_d[n]] + msg + "<img src='images/correct.gif' /><br>");				   
+				   $('#installmessage').append(setting[m_d[n]] + msg + "<img src='images/correct.gif' /><br>");
 					n++;
 					if(n < m_d.length) {
 						reloads();
@@ -87,17 +88,17 @@ function reloads() {
 						if(testdata == 1) {
 							$('#hiddenop').load('?step=testdata&sid='+Math.random()*5);
 							$('#installmessage').append("<font color='yellow'>测试数据安装完成</font><br>");
-						}						
-						$('#hiddenop').load('?step=cache_all&sid='+Math.random()*5);						
+						}
+						$('#hiddenop').load('?step=cache_all&sid='+Math.random()*5);
 						$('#installmessage').append("<font color='yellow'>缓存更新成功</font><br>");
 						$('#installmessage').append("<font color='yellow'>安装完成</font>");
 						$('#finish').removeClass('pre');
 						$('#finish').html('安装完成');
-						setTimeout("$('#install').submit();",1000); 						
+						setTimeout("$('#install').submit();",1000);
 					}
 					document.getElementById('installmessage').scrollTop = document.getElementById('installmessage').scrollHeight;
-			   }	
-		}	
+			   }
+		}
 		});
 }
 //-->

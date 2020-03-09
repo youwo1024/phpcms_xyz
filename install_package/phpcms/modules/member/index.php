@@ -10,20 +10,19 @@ pc_base::load_sys_class('form', '', 0);
 
 class index extends foreground {
 
-	private $times_db;
+	private $times_db, $phpsso_status, $client;
 
 	function __construct() {
 		parent::__construct();
 		$this->http_user_agent = $_SERVER['HTTP_USER_AGENT'];
+		$this->phpsso_status = pc_base::load_config('system', 'phpsso');
 	}
 
 	public function init() {
 		$memberinfo = $this->memberinfo;
 
-		//初始化phpsso
-		$phpsso_api_url = $this->_init_phpsso();
 		//获取头像数组
-		$avatar = $this->client->ps_getavatar($this->memberinfo['phpssouid']);
+		$avatar = get_memberavatar($this->phpsso_status ? $this->memberinfo['phpssouid'] : $this->memberinfo['userid']);
 
 		$grouplist = getcache('grouplist');
 		$memberinfo['groupname'] = $grouplist[$memberinfo[groupid]]['name'];
@@ -134,71 +133,67 @@ class index extends foreground {
 				$_POST['info'] = array_map('new_html_special_chars',$_POST['info']);
 				$user_model_info = $member_input->get($_POST['info']);
 			}
-			if(pc_base::load_config('system', 'phpsso')) {
+			if($this->phpsso_status) {
 				$this->_init_phpsso();
 				$status = $this->client->ps_member_register($userinfo['username'], $userinfo['password'], $userinfo['email'], $userinfo['regip'], $userinfo['encrypt']);
-				if($status > 0) {
-					$userinfo['phpssouid'] = $status;
-					//传入phpsso为明文密码，加密后存入phpcms_v9
-					$password = $userinfo['password'];
-					$userinfo['password'] = password($userinfo['password'], $userinfo['encrypt']);
-					$userid = $this->db->insert($userinfo, 1);
-					if($member_setting['choosemodel']) {	//如果开启选择模型
-						$user_model_info['userid'] = $userid;
-						//插入会员模型数据
-						$this->db->set_model($userinfo['modelid']);
-						$this->db->insert($user_model_info);
-					}
-
-					if($userid > 0) {
-						//执行登陆操作
-						if(!$cookietime) $get_cookietime = param::get_cookie('cookietime');
-						$_cookietime = $cookietime ? intval($cookietime) : ($get_cookietime ? $get_cookietime : 0);
-						$cookietime = $_cookietime ? TIME + $_cookietime : 0;
-
-						if($userinfo['groupid'] == 7) {
-							param::set_cookie('_username', $userinfo['username'], $cookietime);
-							param::set_cookie('email', $userinfo['email'], $cookietime);
-						} else {
-							$phpcms_auth = sys_auth($userid."\t".$userinfo['password'], 'ENCODE', get_auth_key('login'));
-
-							param::set_cookie('auth', $phpcms_auth, $cookietime);
-							param::set_cookie('_userid', $userid, $cookietime);
-							param::set_cookie('_username', $userinfo['username'], $cookietime);
-							param::set_cookie('_nickname', $userinfo['nickname'], $cookietime);
-							param::set_cookie('_groupid', $userinfo['groupid'], $cookietime);
-							param::set_cookie('cookietime', $_cookietime, $cookietime);
-						}
-					}
-					//如果需要邮箱认证
-					if($member_setting['enablemailcheck']) {
-						pc_base::load_sys_func('mail');
-						$code = sys_auth($userid.'|'.microtime(true), 'ENCODE', get_auth_key('email'));
-						$url = APP_PATH."index.php?m=member&c=index&a=register&code=$code&verify=1";
-						$message = $member_setting['registerverifymessage'];
-						$message = str_replace(array('{click}','{url}','{username}','{email}','{password}'), array('<a href="'.$url.'">'.L('please_click').'</a>',$url,$userinfo['username'],$userinfo['email'],$password), $message);
- 						sendmail($userinfo['email'], L('reg_verify_email'), $message);
-						//设置当前注册账号COOKIE，为第二步重发邮件所用
-						$_SESSION['_regusername'] = $userinfo['username'];
-						$_SESSION['_reguserid'] = $userid;
-						$_SESSION['_reguseruid'] = $userinfo['phpssouid'];
-						showmessage(L('operation_success'), 'index.php?m=member&c=index&a=register&t=2');
-					} else {
-						//如果不需要邮箱认证、直接登录其他应用
-						$synloginstr = $this->client->ps_member_synlogin($userinfo['phpssouid']);
-						showmessage(L('operation_success').$synloginstr, 'index.php?m=member&c=index&a=init');
-					}
-
-				}
 			} else {
-				showmessage(L('enable_register').L('enable_phpsso'), 'index.php?m=member&c=index&a=login');
+				$status = 0;
+			}
+			if($status > 0 || $this->phpsso_status == 0) {
+				$userinfo['phpssouid'] = $status;
+				//传入phpsso为明文密码，加密后存入phpcms_v9
+				$password = $userinfo['password'];
+				$userinfo['password'] = password($userinfo['password'], $userinfo['encrypt']);
+				$userid = $this->db->insert($userinfo, 1);
+				if($member_setting['choosemodel']) {	//如果开启选择模型
+					$user_model_info['userid'] = $userid;
+					//插入会员模型数据
+					$this->db->set_model($userinfo['modelid']);
+					$this->db->insert($user_model_info);
+				}
+
+				if($userid > 0) {
+					//执行登陆操作
+					if(!$cookietime) $get_cookietime = param::get_cookie('cookietime');
+					$_cookietime = $cookietime ? intval($cookietime) : ($get_cookietime ? $get_cookietime : 0);
+					$cookietime = $_cookietime ? TIME + $_cookietime : 0;
+
+					if($userinfo['groupid'] == 7) {
+						param::set_cookie('_username', $userinfo['username'], $cookietime);
+						param::set_cookie('email', $userinfo['email'], $cookietime);
+					} else {
+						$phpcms_auth = sys_auth($userid."\t".$userinfo['password'], 'ENCODE', get_auth_key('login'));
+
+						param::set_cookie('auth', $phpcms_auth, $cookietime);
+						param::set_cookie('_userid', $userid, $cookietime);
+						param::set_cookie('_username', $userinfo['username'], $cookietime);
+						param::set_cookie('_nickname', $userinfo['nickname'], $cookietime);
+						param::set_cookie('_groupid', $userinfo['groupid'], $cookietime);
+						param::set_cookie('cookietime', $_cookietime, $cookietime);
+					}
+				}
+				//如果需要邮箱认证
+				if($member_setting['enablemailcheck']) {
+					pc_base::load_sys_func('mail');
+					$code = sys_auth($userid.'|'.microtime(true), 'ENCODE', get_auth_key('email'));
+					$url = APP_PATH."index.php?m=member&c=index&a=register&code=$code&verify=1";
+					$message = $member_setting['registerverifymessage'];
+					$message = str_replace(array('{click}','{url}','{username}','{email}','{password}'), array('<a href="'.$url.'">'.L('please_click').'</a>',$url,$userinfo['username'],$userinfo['email'],$password), $message);
+					sendmail($userinfo['email'], L('reg_verify_email'), $message);
+					//设置当前注册账号COOKIE，为第二步重发邮件所用
+					$_SESSION['_regusername'] = $userinfo['username'];
+					$_SESSION['_reguserid'] = $userid;
+					$_SESSION['_reguseruid'] = $userinfo['phpssouid'];
+					showmessage(L('operation_success'), 'index.php?m=member&c=index&a=register&t=2');
+				} else {
+					//如果不需要邮箱认证、直接登录其他应用
+					$synloginstr = $this->phpsso_status ? $this->client->ps_member_synlogin($userinfo['phpssouid']) : '';
+					showmessage(L('operation_success').$synloginstr, 'index.php?m=member&c=index&a=init');
+				}
+
 			}
 			showmessage(L('operation_failure'), HTTP_REFERER);
 		} else {
-			if(!pc_base::load_config('system', 'phpsso')) {
-				showmessage(L('enable_register').L('enable_phpsso'), 'index.php?m=member&c=index&a=login');
-			}
-
 			if(!empty($_GET['verify'])) {
 				$code = isset($_GET['code']) ? trim($_GET['code']) : showmessage(L('operation_failure'), 'index.php?m=member&c=index');
 				$code_res = sys_auth($code, 'DECODE', get_auth_key('email'));
@@ -276,26 +271,41 @@ class index extends foreground {
 		}
 		//验证userid和username是否匹配
 		$r = $this->db->get_one(array('userid'=>intval($_userid)));
-		if($r[username]!=$_username){
+		if($r['username']!=$_username){
 			return '2';
 		}
 
-		$this->_init_phpsso();
-		$status = $this->client->ps_checkemail($newemail);
-		if($status=='-5'){//邮箱被占用
+		//首先判断会员审核表
+		$verify_db = pc_base::load_model('member_verify_model');
+		if($verify_db->get_one(array('email'=>$newemail))) {
 			exit('-1');
 		}
-		if ($status==-1) {
-			$status = $this->client->ps_get_member_info($newemail, 3);
-			if($status) {
-				$status = unserialize($status);	//接口返回序列化，进行判断
-				if (!isset($status['uid']) || $status['uid'] != intval($_ssouid)) {
-					exit('-1');
-				}
-			} else {
+
+		if ($this->phpsso_status) {
+			$this->_init_phpsso();
+			$status = $this->client->ps_checkemail($newemail);
+			if ($status == '-5') {//邮箱被占用
 				exit('-1');
 			}
+			if ($status == -1) {
+				$status = $this->client->ps_get_member_info($newemail, 3);
+				if ($status) {
+					$status = unserialize($status);    //接口返回序列化，进行判断
+					if (!isset($status['uid']) || $status['uid'] != intval($_ssouid)) {
+						exit('-1');
+					}
+				} else {
+					exit('-1');
+				}
+			}
+		} else {
+			if($r = $this->db->get_one(array('email'=>$newemail))) {
+				if ($r['userid'] != intval($_userid)) {
+					exit('-1');
+				}
+			}
 		}
+
 		//验证邮箱格式
 		pc_base::load_sys_func('mail');
 		$code = sys_auth($_userid.'|'.microtime(true), 'ENCODE', get_auth_key('email'));
@@ -309,7 +319,9 @@ class index extends foreground {
  		if(sendmail($newemail, L('reg_verify_email'), $message)){
 			//更新新的邮箱，用来验证
  			$this->db->update(array('email'=>$newemail), array('userid'=>$_userid));
-			$this->client->ps_member_edit($_username, $newemail, '', '', $_ssouid);
+ 			if ($this->phpsso_status) {
+				$this->client->ps_member_edit($_username, $newemail, '', '', $_ssouid);
+			}
 			$return = '1';
 		}else{
 			$return = '2';
@@ -319,10 +331,8 @@ class index extends foreground {
 
 	public function account_manage() {
 		$memberinfo = $this->memberinfo;
-		//初始化phpsso
-		$phpsso_api_url = $this->_init_phpsso();
 		//获取头像数组
-		$avatar = $this->client->ps_getavatar($this->memberinfo['phpssouid']);
+		$avatar = get_memberavatar($this->phpsso_status ? $this->memberinfo['phpssouid'] : $this->memberinfo['userid']);
 
 		$grouplist = getcache('grouplist');
 		$member_model = getcache('member_model', 'commons');
@@ -381,13 +391,71 @@ class index extends foreground {
 
 	public function account_manage_avatar() {
 		$memberinfo = $this->memberinfo;
-		//初始化phpsso
-		$phpsso_api_url = $this->_init_phpsso();
-		$ps_auth_key = pc_base::load_config('system', 'phpsso_auth_key');
-		$auth_data = $this->client->auth_data(array('uid'=>$this->memberinfo['phpssouid'],'sys_auth_time'=>microtime(true)), '', $ps_auth_key);
-		$upurl = $phpsso_api_url.'/index.php?m=phpsso&c=index&a=uploadavatar&auth_data='.$auth_data;
+
+		if ($this->phpsso_status) {
+			//初始化phpsso
+			$phpsso_api_url = $this->_init_phpsso();
+			$ps_auth_key = pc_base::load_config('system', 'phpsso_auth_key');
+			$auth_data = $this->client->auth_data(array('uid' => $this->memberinfo['phpssouid'], 'sys_auth_time' => microtime(true)), '', $ps_auth_key);
+			$upurl = $phpsso_api_url . '/index.php?m=phpsso&c=index&a=uploadavatar&auth_data=' . $auth_data;
+		} else {
+			$avatardata = file_get_contents("php://input");
+			if($avatardata) {
+				if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $avatardata, $result)) {
+					$avatardata = base64_decode(str_replace($result[1], '', $avatardata));
+				}
+
+				//根据用户id创建文件夹
+				$dir1 = ceil($memberinfo['userid'] / 10000);
+				$dir2 = ceil($memberinfo['userid'] % 10000 / 1000);
+
+				//创建图片存储文件夹
+				$avatarfile = pc_base::load_config('system', 'upload_path') . 'avatar/';
+				$dir = $avatarfile . $dir1 . '/' . $dir2 . '/' . $memberinfo['userid'] . '/';
+				if (!file_exists($dir)) {
+					mkdir($dir, 0777, true);
+				}
+				$filename = $dir . '180x180.jpg';
+
+				//保存图片
+				$fp = fopen($filename, 'w');
+				fwrite($fp, $avatardata);
+				fclose($fp);
+
+				$avatararr = array('180x180.jpg', '30x30.jpg', '45x45.jpg', '90x90.jpg');
+				$files = glob($dir . "*");
+				foreach ($files as $_files) {
+					if (is_dir($_files)) dir_delete($_files);
+					if (!in_array(basename($_files), $avatararr)) @unlink($_files);
+				}
+				if ($handle = opendir($dir)) {
+					while (false !== ($file = readdir($handle))) {
+						if ($file !== '.' && $file !== '..') {
+							if (!in_array($file, $avatararr)) {
+								@unlink($dir . $file);
+							} else {
+								$info = @getimagesize($dir . $file);
+								if (!$info || $info[2] != 2) {
+									@unlink($dir . $file);
+								}
+							}
+						}
+					}
+					closedir($handle);
+				}
+
+				pc_base::load_sys_class('image', '', '0');
+				$image = new image(1, 0);
+				$image->thumb($filename, $dir . '30x30.jpg', 30, 30);
+				$image->thumb($filename, $dir . '45x45.jpg', 45, 45);
+				$image->thumb($filename, $dir . '90x90.jpg', 90, 90);
+				$this->db->update(array('avatar' => 1), array('userid' => $memberinfo['userid']));
+				exit('1');
+			}
+			$upurl = 'index.php?m=member&c=index&a=account_manage_avatar';
+		}
 		//获取头像数组
-		$avatar = $this->client->ps_getavatar($this->memberinfo['phpssouid']);
+		$avatar = get_memberavatar($this->phpsso_status ? $this->memberinfo['phpssouid'] : $this->memberinfo['userid'], false, '');
 
 		include template('member', 'account_manage_avatar');
 	}
@@ -482,7 +550,7 @@ class index extends foreground {
 			$updateinfo['password'] = $newpassword;
 
 			$this->db->update($updateinfo, array('userid'=>$this->memberinfo['userid']));
-			if(pc_base::load_config('system', 'phpsso')) {
+			if($this->phpsso_status) {
 				//初始化phpsso
 				$this->_init_phpsso();
 				$res = $this->client->ps_member_edit('', $email, $_POST['info']['password'], $_POST['info']['newpassword'], $this->memberinfo['phpssouid'], $this->memberinfo['encrypt']);
@@ -580,11 +648,8 @@ class index extends foreground {
 		} else {
 
 			$groupid = isset($_GET['groupid']) ? intval($_GET['groupid']) : '';
-			//初始化phpsso
-			$phpsso_api_url = $this->_init_phpsso();
 			//获取头像数组
-			$avatar = $this->client->ps_getavatar($this->memberinfo['phpssouid']);
-
+			$avatar = get_memberavatar($this->phpsso_status ? $this->memberinfo['phpssouid'] : $this->memberinfo['userid']);
 
 			$memberinfo['groupname'] = $grouplist[$memberinfo[groupid]]['name'];
 			$memberinfo['grouppoint'] = $grouplist[$memberinfo[groupid]]['point'];
@@ -619,7 +684,7 @@ class index extends foreground {
 			$cookietime = intval($_POST['cookietime']);
 			$synloginstr = ''; //同步登陆js代码
 
-			if(pc_base::load_config('system', 'phpsso')) {
+			if($this->phpsso_status) {
 				$this->_init_phpsso();
 				$status = $this->client->ps_member_login($username, $password);
 				$memberinfo = unserialize($status);
@@ -774,7 +839,7 @@ class index extends foreground {
 			header('Location: '.$logouturl);
 		} else {
 			$synlogoutstr = '';	//同步退出js代码
-			if(pc_base::load_config('system', 'phpsso')) {
+			if($this->phpsso_status) {
 				$this->_init_phpsso();
 				$synlogoutstr = $this->client->ps_member_synlogout();
 			}
@@ -819,16 +884,13 @@ class index extends foreground {
 			$this->friend_db->delete(array('userid'=>$memberinfo['userid'], 'friendid'=>intval($_GET['friendid'])));
 			showmessage(L('operation_success'), HTTP_REFERER);
 		} else {
-			//初始化phpsso
-			$phpsso_api_url = $this->_init_phpsso();
-
 			//我的好友列表userid
 			$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 			$friendids = $this->friend_db->listinfo(array('userid'=>$memberinfo['userid']), '', $page, 10);
 			$pages = $this->friend_db->pages;
 			foreach($friendids as $k=>$v) {
 				$friendlist[$k]['friendid'] = $v['friendid'];
-				$friendlist[$k]['avatar'] = $this->client->ps_getavatar($v['phpssouid']);
+				$friendlist[$k]['avatar'] = $avatar = get_memberavatar($this->phpsso_status ? $v['phpssouid'] : $v['userid']);
 				$friendlist[$k]['is'] = $v['is'];
 			}
 			include template('member', 'friend_list');
@@ -842,13 +904,17 @@ class index extends foreground {
 		$memberinfo = $this->memberinfo;
 		//加载用户模块配置
 		$member_setting = getcache('member_setting');
-		$this->_init_phpsso();
-		$setting = $this->client->ps_getcreditlist();
-		$outcredit = unserialize($setting);
-		$setting = $this->client->ps_getapplist();
-		$applist = unserialize($setting);
+		if ($this->phpsso_status) {
+			$this->_init_phpsso();
+			$setting = $this->client->ps_getcreditlist();
+			$outcredit = unserialize($setting);
+			$setting = $this->client->ps_getapplist();
+			$applist = unserialize($setting);
+		} else {
+			$applist = array();
+		}
 
-		if(isset($_POST['dosubmit'])) {
+		if(isset($_POST['dosubmit']) && $this->phpsso_status) {
 			//本系统积分兑换数
 			$fromvalue = intval($_POST['fromvalue']);
 			//本系统积分类型
@@ -1003,20 +1069,24 @@ class index extends foreground {
 			$username = addslashes($username);
 		}
 		$username = safe_replace($username);
+
 		//首先判断会员审核表
-		$this->verify_db = pc_base::load_model('member_verify_model');
-		if($this->verify_db->get_one(array('username'=>$username))) {
+		$verify_db = pc_base::load_model('member_verify_model');
+		if($verify_db->get_one(array('username'=>$username))) {
 			exit('0');
 		}
 
-		$this->_init_phpsso();
-		$status = $this->client->ps_checkname($username);
-
-		if($status == -4 || $status == -1) {
+		if ($this->phpsso_status) {
+			$this->_init_phpsso();
+			$status = $this->client->ps_checkname($username);
+			if($status == -4 || $status == -1) {
+				exit('0');
+			}
+		} elseif($this->db->get_one(array('username'=>$username))) {
 			exit('0');
-		} else {
-			exit('1');
 		}
+
+		exit('1');
 	}
 
 	/**
@@ -1031,8 +1101,8 @@ class index extends foreground {
 			$nickname = addslashes($nickname);
 		}
 		//首先判断会员审核表
-		$this->verify_db = pc_base::load_model('member_verify_model');
-		if($this->verify_db->get_one(array('nickname'=>$nickname))) {
+		$verify_db = pc_base::load_model('member_verify_model');
+		if($verify_db->get_one(array('nickname'=>$nickname))) {
 			exit('0');
 		}
 		if(isset($_GET['userid'])) {
@@ -1067,31 +1137,47 @@ class index extends foreground {
 	 * @return $status {-1:email已经存在 ;-5:邮箱禁止注册;1:成功}
 	 */
 	public function public_checkemail_ajax() {
-		$this->_init_phpsso();
 		$email = isset($_GET['email']) && trim($_GET['email']) && is_email(trim($_GET['email']))  ? trim($_GET['email']) : exit(0);
 
-		$status = $this->client->ps_checkemail($email);
-		if($status == -5) {	//禁止注册
+		//首先判断会员审核表
+		$verify_db = pc_base::load_model('member_verify_model');
+		if($verify_db->get_one(array('email'=>$email))) {
 			exit('0');
-		} elseif($status == -1) {	//用户名已存在，但是修改用户的时候需要判断邮箱是否是当前用户的
-			if(isset($_GET['phpssouid'])) {	//修改用户传入phpssouid
-				$status = $this->client->ps_get_member_info($email, 3);
-				if($status) {
-					$status = unserialize($status);	//接口返回序列化，进行判断
-					if (isset($status['uid']) && $status['uid'] == intval($_GET['phpssouid'])) {
-						exit('1');
+		}
+
+		if ($this->phpsso_status) {
+			$this->_init_phpsso();
+			$status = $this->client->ps_checkemail($email);
+			if($status == -5) {	//禁止注册
+				exit('0');
+			} elseif($status == -1) {	//用户名已存在，但是修改用户的时候需要判断邮箱是否是当前用户的
+				if(isset($_GET['phpssouid'])) {	//修改用户传入phpssouid
+					$status = $this->client->ps_get_member_info($email, 3);
+					if($status) {
+						$status = unserialize($status);	//接口返回序列化，进行判断
+						if (!isset($status['uid']) || $status['uid'] != intval($_GET['phpssouid'])) {
+							exit('0');
+						}
 					} else {
 						exit('0');
 					}
 				} else {
 					exit('0');
 				}
-			} else {
-				exit('0');
 			}
 		} else {
-			exit('1');
+			if($r = $this->db->get_one(array('email'=>$email))) {
+				if(isset($_GET['phpssouid'])) { //修改用户传入phpssouid
+					if ($r['userid'] != intval($_GET['phpssouid'])) {
+						exit('0');
+					}
+				} else {
+					exit('0');
+				}
+			}
 		}
+
+		exit('1');
 	}
 
 	public function public_sina_login() {
@@ -1136,8 +1222,11 @@ class index extends foreground {
 					//读取本站用户信息，执行登录操作
 
 					$password = $r['password'];
-					$this->_init_phpsso();
-					$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+					$synloginstr = '';
+					if ($this->phpsso_status) {
+						$this->_init_phpsso();
+						$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+					}
 					$userid = $r['userid'];
 					$groupid = $r['groupid'];
 					$username = $r['username'];
@@ -1255,8 +1344,11 @@ class index extends foreground {
 				if(!empty($r)) {
 					//读取本站用户信息，执行登录操作
 					$password = $r['password'];
-					$this->_init_phpsso();
-					$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+					$synloginstr = '';
+					if ($this->phpsso_status) {
+						$this->_init_phpsso();
+						$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+					}
 					$userid = $r['userid'];
 					$groupid = $r['groupid'];
 					$username = $r['username'];
@@ -1319,8 +1411,11 @@ class index extends foreground {
 						 if(!empty($r)){
 								//QQ已存在于数据库，则直接转向登陆操作
 								$password = $r['password'];
-								$this->_init_phpsso();
-								$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+								$synloginstr = '';
+								if ($this->phpsso_status) {
+									$this->_init_phpsso();
+									$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+								}
 								$userid = $r['userid'];
 								$groupid = $r['groupid'];
 								$username = $r['username'];
@@ -1375,8 +1470,11 @@ class index extends foreground {
 				if(!empty($r)) {
 					//读取本站用户信息，执行登录操作
 					$password = $r['password'];
-					$this->_init_phpsso();
-					$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+					$synloginstr = '';
+					if($this->phpsso_status) {
+						$this->_init_phpsso();
+						$synloginstr = $this->client->ps_member_synlogin($r['phpssouid']);
+					}
 					$userid = $r['userid'];
 					$groupid = $r['groupid'];
 					$username = $r['username'];
@@ -1537,7 +1635,7 @@ class index extends foreground {
 				$updateinfo['password'] = password($password, $memberinfo['encrypt']);
 
 				$this->db->update($updateinfo, array('userid'=>$code[0]));
-				if(pc_base::load_config('system', 'phpsso')) {
+				if($this->phpsso_status) {
 					//初始化phpsso
 					$this->_init_phpsso();
 					$this->client->ps_member_edit('', $email, '', $password, $memberinfo['phpssouid'], $memberinfo['encrypt']);
@@ -1674,7 +1772,7 @@ class index extends foreground {
 
 					$this->db->update($updateinfo, array('userid'=>$userid));
 					$rs = $this->db->get_one(array('userid'=>$userid),'phpssouid');
-					if(pc_base::load_config('system', 'phpsso')) {
+					if($this->phpsso_status) {
 						//初始化phpsso
 						$this->_init_phpsso();
 						$this->client->ps_member_edit('', '', '', $password, $rs['phpssouid'], $encrypt);
@@ -1748,7 +1846,7 @@ class index extends foreground {
 
 					$this->db->update($updateinfo, array('userid'=>$userid));
 					$rs = $this->db->get_one(array('userid'=>$userid),'phpssouid');
-					if(pc_base::load_config('system', 'phpsso')) {
+					if($this->phpsso_status) {
 						//初始化phpsso
 						$this->_init_phpsso();
 						$this->client->ps_member_edit('', '', '', $password, $rs['phpssouid'], $encrypt);

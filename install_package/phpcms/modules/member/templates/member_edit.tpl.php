@@ -12,10 +12,10 @@
 	$("#email").formValidator({onshow:"<?php echo L('input').L('email')?>",onfocus:"<?php echo L('email').L('format_incorrect')?>",oncorrect:"<?php echo L('email').L('format_right')?>"}).regexValidator({regexp:"email",datatype:"enum",onerror:"<?php echo L('email').L('format_incorrect')?>"}).ajaxValidator({
 	    type : "get",
 		url : "",
-		data :"m=member&c=member&a=public_checkemail_ajax&phpssouid=<?php echo $memberinfo['phpssouid']?>",
+		data :"m=member&c=index&a=public_checkemail_ajax&phpssouid=<?php echo $this->phpsso_status ? $memberinfo['phpssouid'] : $memberinfo['userid']?>",
 		datatype : "html",
 		async:'false',
-		success : function(data){	
+		success : function(data){
             if( data == "1" ) {
                 return true;
 			} else {
@@ -54,23 +54,23 @@
 	<legend><?php echo L('basic_configuration')?></legend>
 	<table width="100%" class="table_form">
 		<tr>
-			<td width="80"><?php echo L('username')?></td> 
+			<td width="80"><?php echo L('username')?></td>
 			<td><?php echo $memberinfo['username']?><?php if($memberinfo['islock']) {?><img title="<?php echo L('lock')?>" src="<?php echo IMG_PATH?>icon/icon_padlock.gif"><?php }?><?php if($memberinfo['vip']) {?><img title="<?php echo L('lock')?>" src="<?php echo IMG_PATH?>icon/vip.gif"><?php }?></td>
 		</tr>
 		<tr>
-			<td><?php echo L('avatar')?></td> 
+			<td><?php echo L('avatar')?></td>
 			<td><img src="<?php echo $memberinfo['avatar']?>" onerror="this.src='<?php echo IMG_PATH?>member/nophoto.gif'" height=90 width=90><input type="checkbox" name="delavatar" id="delavatar" class="input-text" value="1" ><label for="delavatar"><?php echo L('delete').L('avatar')?></label></td>
 		</tr>
 		<tr>
-			<td><?php echo L('password')?></td> 
+			<td><?php echo L('password')?></td>
 			<td><input type="password" name="info[password]" id="password" class="input-text"></input></td>
 		</tr>
 		<tr>
-			<td><?php echo L('cofirmpwd')?></td> 
+			<td><?php echo L('cofirmpwd')?></td>
 			<td><input type="password" name="info[pwdconfirm]" id="pwdconfirm" class="input-text"></input></td>
 		</tr>
 		<tr>
-			<td><?php echo L('nickname')?></td> 
+			<td><?php echo L('nickname')?></td>
 			<td><input type="text" name="info[nickname]" id="nickname" value="<?php echo $memberinfo['nickname']?>" class="input-text"></input></td>
 		</tr>
 		<tr>
@@ -118,7 +118,7 @@
 	<table width="100%" class="table_form">
 	<?php foreach($forminfos as $k=>$v) {?>
 		<tr>
-			<td width="80"><?php echo $v['name']?></td> 
+			<td width="80"><?php echo $v['name']?></td>
 			<td><?php echo $v['form']?></td>
 		</tr>
 	<?php }?>

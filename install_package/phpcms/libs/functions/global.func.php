@@ -968,32 +968,36 @@ function get_memberinfo_buyusername($username, $field='') {
 
 /**
  * 获取用户头像，建议传入phpssouid
- * @param $uid 默认为phpssouid
- * @param $is_userid $uid是否为v9 userid，如果为真，执行sql查询此用户的phpssouid
- * @param $size 头像大小 有四种[30x30 45x45 90x90 180x180] 默认30
+ * @param int $uid 默认为phpssouid
+ * @param bool $is_userid $uid是否为v9 userid，如果为真，执行sql查询此用户的phpssouid
+ * @param int $size 头像大小 有四种[30x30 45x45 90x90 180x180] 默认30
+ * @return bool|mixed
  */
-function get_memberavatar($uid, $is_userid='', $size='30') {
-	if($is_userid) {
-		$db = pc_base::load_model('member_model');
-		$memberinfo = $db->get_one(array('userid'=>$uid));
-		if(isset($memberinfo['phpssouid'])) {
-			$uid = $memberinfo['phpssouid'];
-		} else {
-			return false;
+function get_memberavatar($uid, $is_userid=false, $size='30') {
+	if (pc_base::load_config('system', 'phpsso')) {
+		if($is_userid) {
+			$db = pc_base::load_model('member_model');
+			$memberinfo = $db->get_one(array('userid'=>$uid));
+			if(isset($memberinfo['phpssouid'])) {
+				$uid = $memberinfo['phpssouid'];
+			} else {
+				return false;
+			}
 		}
+		pc_base::load_app_class('client', 'member', 0);
+		define('APPID', pc_base::load_config('system', 'phpsso_appid'));
+		$phpsso_api_url = pc_base::load_config('system', 'phpsso_api_url');
+		$phpsso_auth_key = pc_base::load_config('system', 'phpsso_auth_key');
+		$client = new client($phpsso_api_url, $phpsso_auth_key);
+		$avatar = $client->ps_getavatar($uid);
+	} else {
+		$dir1 = ceil($uid / 10000);
+		$dir2 = ceil($uid % 10000 / 1000);
+		$url = pc_base::load_config('system', 'upload_url').'avatar/'.$dir1.'/'.$dir2.'/'.$uid.'/';
+		$avatar = array('180'=>$url.'180x180.jpg', '90'=>$url.'90x90.jpg', '45'=>$url.'45x45.jpg', '30'=>$url.'30x30.jpg');
 	}
 
-	pc_base::load_app_class('client', 'member', 0);
-	define('APPID', pc_base::load_config('system', 'phpsso_appid'));
-	$phpsso_api_url = pc_base::load_config('system', 'phpsso_api_url');
-	$phpsso_auth_key = pc_base::load_config('system', 'phpsso_auth_key');
-	$client = new client($phpsso_api_url, $phpsso_auth_key);
-	$avatar = $client->ps_getavatar($uid);
-	if(isset($avatar[$size])) {
-		return $avatar[$size];
-	} else {
-		return false;
-	}
+	return $size ? (isset($avatar[$size]) ? $avatar[$size] : false) : $avatar;
 }
 
 /**

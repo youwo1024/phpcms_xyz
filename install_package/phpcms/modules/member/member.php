@@ -13,13 +13,17 @@ pc_base::load_sys_class('form', '', 0);
 pc_base::load_app_func('util', 'content');
 
 class member extends admin {
-	
-	private $db, $verify_db;
-	
+
+	private $db, $phpsso_status, $client;
+
 	function __construct() {
 		parent::__construct();
 		$this->db = pc_base::load_model('member_model');
-		$this->_init_phpsso();
+
+        $this->phpsso_status = pc_base::load_config('system', 'phpsso');
+        if($this->phpsso_status > 0) {
+            $this->_init_phpsso();
+        }
 	}
 
 	/**
@@ -28,8 +32,8 @@ class member extends admin {
 	function init() {
 		$show_header = $show_scroll = true;
 		pc_base::load_sys_class('form', '', 0);
-		$this->verify_db = pc_base::load_model('member_verify_model');
-		
+		$verify_db = pc_base::load_model('member_verify_model');
+
 		//搜索框
 		$keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
 		$type = isset($_GET['type']) ? $_GET['type'] : '';
@@ -43,14 +47,14 @@ class member extends admin {
 
 		$memberinfo['totalnum'] = $this->db->count();
 		$memberinfo['vipnum'] = $this->db->count(array('vip'=>1));
-		$memberinfo['verifynum'] = $this->verify_db->count(array('status'=>0));
+		$memberinfo['verifynum'] = $verify_db->count(array('status'=>0));
 
 		$todaytime = strtotime(date('Y-m-d', SYS_TIME));
 		$memberinfo['today_member'] = $this->db->count("`regdate` > '$todaytime'");
-		
+
 		include $this->admin_tpl('member_init');
 	}
-	
+
 	/**
 	 * 会员搜索
 	 */
@@ -61,34 +65,34 @@ class member extends admin {
 		$type = isset($_GET['type']) ? $_GET['type'] : '';
 		$groupid = isset($_GET['groupid']) ? $_GET['groupid'] : '';
 		$modelid = isset($_GET['modelid']) ? $_GET['modelid'] : '';
-		
+
 		//站点信息
 		$sitelistarr = getcache('sitelist', 'commons');
 		$siteid = isset($_GET['siteid']) ? intval($_GET['siteid']) : '0';
 		foreach ($sitelistarr as $k=>$v) {
 			$sitelist[$k] = $v['name'];
 		}
-		
+
 		$status = isset($_GET['status']) ? $_GET['status'] : '';
 		$amount_from = isset($_GET['amount_from']) ? $_GET['amount_from'] : '';
 		$amount_to = isset($_GET['amount_to']) ? $_GET['amount_to'] : '';
 		$point_from = isset($_GET['point_from']) ? $_GET['point_from'] : '';
 		$point_to = isset($_GET['point_to']) ? $_GET['point_to'] : '';
-				
+
 		$start_time = isset($_GET['start_time']) ? $_GET['start_time'] : '';
 		$end_time = isset($_GET['end_time']) ? $_GET['end_time'] : date('Y-m-d', SYS_TIME);
 		$grouplist = getcache('grouplist');
 		foreach($grouplist as $k=>$v) {
 			$grouplist[$k] = $v['name'];
 		}
-		//会员所属模型		
+		//会员所属模型
 		$modellistarr = getcache('member_model', 'commons');
 		foreach ($modellistarr as $k=>$v) {
 			$modellist[$k] = $v['name'];
 		}
-				
+
 		if (isset($_GET['search'])) {
-			
+
 			//默认选取一个月内的用户，防止用户量过大给数据造成灾难
 			$where_start_time = strtotime($start_time) ? strtotime($start_time) : 0;
 			$where_end_time = strtotime($end_time) + 86400;
@@ -98,15 +102,15 @@ class member extends admin {
 				$where_start_time = $where_end_time;
 				$where_end_time = $tmp;
 				$tmptime = $start_time;
-				
+
 				$start_time = $end_time;
 				$end_time = $tmptime;
 				unset($tmp, $tmptime);
 			}
-			
-			
+
+
 			$where = '';
-			
+
 			//如果是超级管理员角色，显示所有用户，否则显示当前站点用户
 			if($_SESSION['roleid'] == 1) {
 				if(!empty($siteid)) {
@@ -116,19 +120,19 @@ class member extends admin {
 				$siteid = get_siteid();
 				$where .= "`siteid` = '$siteid' AND ";
 			}
-				
+
 			if($status) {
 				$islock = $status == 1 ? 1 : 0;
 				$where .= "`islock` = '$islock' AND ";
 			}
-		
+
 			if($groupid) {
 				$where .= "`groupid` = '$groupid' AND ";
 			}
-			
+
 			if($modelid) {
 				$where .= "`modelid` = '$modelid' AND ";
-			}	
+			}
 			$where .= "`regdate` BETWEEN '$where_start_time' AND '$where_end_time' AND ";
 
 			//资金范围
@@ -159,7 +163,7 @@ class member extends admin {
 					$where .= "`point` > '$point_from' AND ";
 				}
 			}
-		
+
 			if($keyword) {
 				if ($type == '1') {
 					$where .= "`username` LIKE '%$keyword%'";
@@ -177,7 +181,7 @@ class member extends admin {
 			} else {
 				$where .= '1';
 			}
-			
+
 		} else {
 			$where = '';
 		}
@@ -186,13 +190,13 @@ class member extends admin {
 		$memberlist = $this->db->listinfo($where, 'userid DESC', $page, 15);
 		//查询会员头像
 		foreach($memberlist as $k=>$v) {
-			$memberlist[$k]['avatar'] = get_memberavatar($v['phpssouid']);
+			$memberlist[$k]['avatar'] = get_memberavatar($this->phpsso_status ? $v['phpssouid'] : $v['userid']);
 		}
 		$pages = $this->db->pages;
 		$big_menu = array('?m=member&c=member&a=manage&menuid=72', L('member_research'));
 		include $this->admin_tpl('member_list');
 	}
-	
+
 	/**
 	 * member list
 	 */
@@ -201,10 +205,10 @@ class member extends admin {
 		foreach ($sitelistarr as $k=>$v) {
 			$sitelist[$k] = $v['name'];
 		}
-	
+
 		$groupid = isset($_GET['groupid']) ? intval($_GET['groupid']) : '';
 		$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-		
+
 		//如果是超级管理员角色，显示所有用户，否则显示当前站点用户
 		if($_SESSION['roleid'] == 1) {
 			$where = '';
@@ -212,7 +216,7 @@ class member extends admin {
 			$siteid = get_siteid();
 			$where .= "`siteid` = '$siteid'";
 		}
-		
+
 		$memberlist_arr = $this->db->listinfo($where, 'userid DESC', $page, 15);
 		$pages = $this->db->pages;
 
@@ -225,23 +229,23 @@ class member extends admin {
 		foreach($grouplist as $k=>$v) {
 			$grouplist[$k] = $v['name'];
 		}
-		
-		//会员所属模型		
+
+		//会员所属模型
 		$modellistarr = getcache('member_model', 'commons');
 		foreach ($modellistarr as $k=>$v) {
 			$modellist[$k] = $v['name'];
 		}
-		
+
 		//查询会员头像
 		foreach($memberlist_arr as $k=>$v) {
 			$memberlist[$k] = $v;
-			$memberlist[$k]['avatar'] = get_memberavatar($v['phpssouid']);
+			$memberlist[$k]['avatar'] = get_memberavatar($this->phpsso_status ? $v['phpssouid'] : $v['userid']);
 		}
 
 		$big_menu = array('javascript:window.top.art.dialog({id:\'add\',iframe:\'?m=member&c=member&a=add\', title:\''.L('member_add').'\', width:\'700\', height:\'500\', lock:true}, function(){var d = window.top.art.dialog({id:\'add\'}).data.iframe;var form = d.document.getElementById(\'dosubmit\');form.click();return false;}, function(){window.top.art.dialog({id:\'add\'}).close()});void(0);', L('member_add'));
 		include $this->admin_tpl('member_list');
 	}
-		
+
 	/**
 	 * add member
 	 */
@@ -259,18 +263,21 @@ class member extends admin {
 			$info['regip'] = ip();
 			$info['overduedate'] = strtotime($info['overduedate']);
 
-			$status = $this->client->ps_member_register($info['username'], $info['password'], $info['email'], $info['regip']);
-
-			if($status > 0) {
-				unset($info[pwdconfirm]);
+            $status = $this->phpsso_status ? $this->client->ps_member_register($info['username'], $info['password'], $info['email'], $info['regip']) : 0;
+			if($status > 0 || $this->phpsso_status == 0) {
+				unset($info['pwdconfirm']);
 				$info['phpssouid'] = $status;
-				//取phpsso密码随机数
-				$memberinfo = $this->client->ps_get_member_info($status);
-				$memberinfo = unserialize($memberinfo);
-				$info['encrypt'] = $memberinfo['random'];
+				if ($this->phpsso_status) {
+					//取phpsso密码随机数
+					$memberinfo = $this->client->ps_get_member_info($status);
+					$memberinfo = unserialize($memberinfo);
+					$info['encrypt'] = $memberinfo['random'];
+				} else {
+					$info['encrypt'] = create_randomstr(6);
+				}
 				$info['password'] = password($info['password'], $info['encrypt']);
 				$info['regdate'] = $info['lastdate'] = SYS_TIME;
-				
+
 				$this->db->insert($info);
 				if($this->db->insert_id()){
 					showmessage(L('operation_success'),'?m=member&c=member&a=add', '', 'add');
@@ -297,12 +304,12 @@ class member extends admin {
 					$modellist[$_key] = $_value['name'];
 				}
 			}
-			
+
 			include $this->admin_tpl('member_add');
 		}
-		
+
 	}
-	
+
 	/**
 	 * edit member
 	 */
@@ -331,7 +338,7 @@ class member extends admin {
 			unset($modelinfo['pwdconfirm']);
 
 			$userid = $info['userid'];
-			
+
 			//如果是超级管理员角色，显示所有用户，否则显示当前站点用户
 			if($_SESSION['roleid'] == 1) {
 				$where = array('userid'=>$userid);
@@ -339,8 +346,7 @@ class member extends admin {
 				$siteid = get_siteid();
 				$where = array('userid'=>$userid, 'siteid'=>$siteid);
 			}
-			
-		
+
 			$userinfo = $this->db->get_one($where);
 			if(empty($userinfo)) {
 				showmessage(L('user_not_exist').L('or').L('no_permission'), HTTP_REFERER);
@@ -348,14 +354,19 @@ class member extends admin {
 
 			//删除用户头像
 			if(!empty($_POST['delavatar'])) {
-				$this->client->ps_deleteavatar($userinfo['phpssouid']);
+				if ($this->phpsso_status) {
+					$this->client->ps_deleteavatar($userinfo['phpssouid']);
+				} else {
+				    self::deleteavatar($userid);
+                    $this->db->update(array('avatar'=>0), array('userid'=>$userid));
+                }
 			}
 
-			$status = $this->client->ps_member_edit($info['username'], $info['email'], '', $info['password'], $userinfo['phpssouid'], $userinfo['encrypt']);
-  			if($status >= 0) { 
+			$status = $this->phpsso_status ? $this->client->ps_member_edit($info['username'], $info['email'], '', $info['password'], $userinfo['phpssouid'], $userinfo['encrypt']) : 0;
+  			if($status >= 0 || $this->phpsso_status == 0) {
 				unset($info['userid']);
 				unset($info['username']);
-				
+
 				//如果密码不为空，修改用户密码。
 				if(isset($info['password']) && !empty($info['password'])) {
 					$info['password'] = password($info['password'], $userinfo['encrypt']);
@@ -364,7 +375,7 @@ class member extends admin {
 				}
 
 				$this->db->update($info, array('userid'=>$userid));
-				
+
 				require_once CACHE_MODEL_PATH.'member_input.class.php';
 		        require_once CACHE_MODEL_PATH.'member_update.class.php';
 				$member_input = new member_input($basicinfo['modelid']);
@@ -379,7 +390,7 @@ class member extends admin {
 					$modelinfo['userid'] = $userid;
 					$this->db->insert($modelinfo);
 				}
-				
+
 				showmessage(L('operation_success'), '?m=member&c=member&a=manage', '', 'edit');
 			} else {
 				showmessage(L('operation_failure'), HTTP_REFERER);
@@ -388,7 +399,7 @@ class member extends admin {
 			$show_header = $show_scroll = true;
 			$siteid = get_siteid();
 			$userid = isset($_GET['userid']) ? $_GET['userid'] : showmessage(L('illegal_parameters'), HTTP_REFERER);
-			
+
 			//会员组缓存
 			$group_cache = getcache('grouplist', 'member');
 			foreach($group_cache as $_key=>$_value) {
@@ -402,7 +413,7 @@ class member extends admin {
 					$modellist[$_key] = $_value['name'];
 				}
 			}
-			
+
 			//如果是超级管理员角色，显示所有用户，否则显示当前站点用户
 			if($_SESSION['roleid'] == 1) {
 				$where = array('userid'=>$userid);
@@ -411,24 +422,24 @@ class member extends admin {
 			}
 
 			$memberinfo = $this->db->get_one($where);
-			
+
 			if(empty($memberinfo)) {
 				showmessage(L('user_not_exist').L('or').L('no_permission'), HTTP_REFERER);
 			}
-			
-			$memberinfo['avatar'] = get_memberavatar($memberinfo['phpssouid'], '', 90);
-			
+
+			$memberinfo['avatar'] = get_memberavatar($this->phpsso_status ? $memberinfo['phpssouid'] : $memberinfo['userid'], '', 90);
+
 			$modelid = isset($_GET['modelid']) ? $_GET['modelid'] : $memberinfo['modelid'];
-			
+
 			//获取会员模型表单
 			require CACHE_MODEL_PATH.'member_form.class.php';
 			$member_form = new member_form($modelid);
-			
+
 			$form_overdudate = form::date('info[overduedate]', date('Y-m-d H:i:s',$memberinfo['overduedate']), 1);
 			$this->db->set_model($modelid);
 			$membermodelinfo = $this->db->get_one(array('userid'=>$userid));
 			$forminfos = $forminfos_arr = $member_form->get($membermodelinfo);
-			
+
 			//万能字段过滤
 			foreach($forminfos as $field=>$info) {
 				if($info['isomnipotent']) {
@@ -445,10 +456,10 @@ class member extends admin {
 				}
 			}
 			$show_dialog = 1;
-			include $this->admin_tpl('member_edit');		
+			include $this->admin_tpl('member_edit');
 		}
 	}
-	
+
 	/**
 	 * delete member
 	 */
@@ -456,15 +467,6 @@ class member extends admin {
 		$uidarr = isset($_POST['userid']) ? $_POST['userid'] : showmessage(L('illegal_parameters'), HTTP_REFERER);
 		$uidarr = array_map('intval',$uidarr);
 		$where = to_sqls($uidarr, '', 'userid');
-		$phpsso_userinfo = $this->db->listinfo($where);
-		$phpssouidarr = array();
-		if(is_array($phpsso_userinfo)) {
-			foreach($phpsso_userinfo as $v) {
-				if(!empty($v['phpssouid'])) {
-					$phpssouidarr[] = $v['phpssouid'];
-				}
-			}
-		}
 		//查询用户信息
 		$userinfo_arr = $this->db->select($where, "userid, modelid");
 		$userinfo = array();
@@ -474,33 +476,49 @@ class member extends admin {
 			}
 		}
 		//delete phpsso member first
-		if(!empty($phpssouidarr)) {
-			$status = $this->client->ps_delete_member($phpssouidarr, 1);
-			if($status > 0) {
-				if ($this->db->delete($where)) {
-					
-					//删除用户模型用户资料
-					foreach($uidarr as $v) {
-						if(!empty($userinfo[$v])) {
-							$this->db->set_model($userinfo[$v]);
-							$this->db->delete(array('userid'=>$v));
-						}
-					}
-				
-					showmessage(L('operation_success'), HTTP_REFERER);
-				} else {
-					showmessage(L('operation_failure'), HTTP_REFERER);
-				}
-			} else {
-				showmessage(L('operation_failure'), HTTP_REFERER);
-			}
-		} else {
-			if ($this->db->delete($where)) {
-				showmessage(L('operation_success'), HTTP_REFERER);
-			} else {
-				showmessage(L('operation_failure'), HTTP_REFERER);
-			}
-		}
+        if ($this->phpsso_status) {
+            $phpsso_userinfo = $this->db->listinfo($where);
+            if(is_array($phpsso_userinfo)) {
+                $phpssouidarr = array();
+                foreach($phpsso_userinfo as $v) {
+                    if(!empty($v['phpssouid'])) {
+                        $phpssouidarr[] = $v['phpssouid'];
+                    }
+                }
+                if (!empty($phpssouidarr)) {
+                    $status = $this->client->ps_delete_member($phpssouidarr, 1);
+                    if ($status > 0) {
+                        if ($this->db->delete($where)) {
+                            //删除用户模型用户资料
+                            foreach ($uidarr as $v) {
+                                if (!empty($userinfo[$v])) {
+                                    $this->db->set_model($userinfo[$v]);
+                                    $this->db->delete(array('userid' => $v));
+                                }
+                            }
+                            showmessage(L('operation_success'), HTTP_REFERER);
+                        } else {
+                            showmessage(L('operation_failure'), HTTP_REFERER);
+                        }
+                    } else {
+                        showmessage(L('operation_failure'), HTTP_REFERER);
+                    }
+                }
+            }
+        }
+        if ($this->db->delete($where)) {
+            //删除用户模型用户资料
+            foreach ($uidarr as $v) {
+                if (!empty($userinfo[$v])) {
+                    $this->db->set_model($userinfo[$v]);
+                    $this->db->delete(array('userid' => $v));
+                    self::deleteavatar($v);
+                }
+            }
+            showmessage(L('operation_success'), HTTP_REFERER);
+        } else {
+            showmessage(L('operation_failure'), HTTP_REFERER);
+        }
 	}
 
 	/**
@@ -516,7 +534,7 @@ class member extends admin {
 			showmessage(L('operation_failure'), HTTP_REFERER);
 		}
 	}
-	
+
 	/**
 	 * unlock member
 	 */
@@ -538,7 +556,7 @@ class member extends admin {
 		if(isset($_POST['dosubmit'])) {
 			$uidarr = isset($_POST['userid']) ? $_POST['userid'] : showmessage(L('illegal_parameters'), HTTP_REFERER);
 			$groupid = isset($_POST['groupid']) && !empty($_POST['groupid']) ? $_POST['groupid'] : showmessage(L('illegal_parameters'), HTTP_REFERER);
-			
+
 			$where = to_sqls($uidarr, '', 'userid');
 			$this->db->update(array('groupid'=>$groupid), $where);
 			showmessage(L('member_move').L('operation_success'), HTTP_REFERER, '', 'move');
@@ -548,7 +566,7 @@ class member extends admin {
 			foreach($grouplist as $k=>$v) {
 				$grouplist[$k] = $v['name'];
 			}
-			
+
 			$ids = isset($_GET['ids']) ? explode(',', $_GET['ids']): showmessage(L('illegal_parameters'), HTTP_REFERER);
 			array_pop($ids);
 			if(!empty($ids)) {
@@ -557,14 +575,13 @@ class member extends admin {
 			} else {
 				showmessage(L('illegal_parameters'), HTTP_REFERER, '', 'move');
 			}
-			
+
 			include $this->admin_tpl('member_move');
 		}
 	}
 
 	function memberinfo() {
 		$show_header = false;
-		
 		$userid = !empty($_GET['userid']) ? intval($_GET['userid']) : '';
 		$username = !empty($_GET['username']) ? trim($_GET['username']) : '';
 		if(!empty($userid)) {
@@ -574,12 +591,12 @@ class member extends admin {
 		} else {
 			showmessage(L('illegal_parameters'), HTTP_REFERER);
 		}
-		
+
 		if(empty($memberinfo)) {
 			showmessage(L('user').L('not_exists'), HTTP_REFERER);
 		}
-		
-		$memberinfo['avatar'] = get_memberavatar($memberinfo['phpssouid'], '', 90);
+
+		$memberinfo['avatar'] = get_memberavatar($this->phpsso_status ? $memberinfo['phpssouid'] : $memberinfo['userid'], '', 90);
 
 		$grouplist = getcache('grouplist');
 		//会员模型缓存
@@ -593,17 +610,17 @@ class member extends admin {
 		$member_modelinfo = $this->db->get_one(array('userid'=>$userid));
 		//模型字段名称
 		$model_fieldinfo = getcache('model_field_'.$modelid, 'model');
-	
+
 		//图片字段显示图片
 		foreach($model_fieldinfo as $k=>$v) {
 			if($v['formtype'] == 'image') {
-				$member_modelinfo[$k] = "<a href='.$member_modelinfo[$k].' target='_blank'><img src='.$member_modelinfo[$k].' height='40' widht='40' onerror=\"this.src='$phpsso_api_url/statics/images/member/nophoto.gif'\"></a>";
+				$member_modelinfo[$k] = "<a href='.$member_modelinfo[$k].' target='_blank'><img src='.$member_modelinfo[$k].' height='40' widht='40' onerror=\"this.src='".IMG_PATH."/statics/images/member/nophoto.gif'\"></a>";
 			} elseif($v['formtype'] == 'images') {
 				$tmp = string2array($member_modelinfo[$k]);
 				$member_modelinfo[$k] = '';
 				if(is_array($tmp)) {
 					foreach ($tmp as $tv) {
-						$member_modelinfo[$k] .= " <a href='$tv[url]' target='_blank'><img src='$tv[url]' height='40' widht='40' onerror=\"this.src='$phpsso_api_url/statics/images/member/nophoto.gif'\"></a>";
+						$member_modelinfo[$k] .= " <a href='$tv[url]' target='_blank'><img src='$tv[url]' height='40' widht='40' onerror=\"this.src='".IMG_PATH."/statics/images/member/nophoto.gif'\"></a>";
 					}
 					unset($tmp);
 				}
@@ -629,7 +646,7 @@ class member extends admin {
 				$tmpid = $tmp['linageid'];
 				$linkagelist = getcache($tmpid, 'linkage');
 				$fullname = $this->_get_linkage_fullname($member_modelinfo[$k], $linkagelist);
-				
+
 				$member_modelinfo[$v['name']] = substr($fullname, 0, -1);
 				unset($tmp, $tmpid, $linkagelist, $fullname);
 			} else {
@@ -665,7 +682,7 @@ class member extends admin {
 		$return = $fullname.$linkagelist['data'][$linkageid]['name'].'>';
 		return $return;
 	}
-	
+
 	private function _checkuserinfo($data, $is_edit=0) {
 		if(!is_array($data)){
 			showmessage(L('need_more_param'));return false;
@@ -678,14 +695,14 @@ class member extends admin {
 		}
 		return $data;
 	}
-		
+
 	private function _checkpasswd($password){
 		if (!is_password($password)){
 			return false;
 		}
 		return true;
 	}
-	
+
 	private function _checkname($username) {
 		$username =  trim($username);
 		if ($this->db->get_one(array('username'=>$username))){
@@ -693,7 +710,7 @@ class member extends admin {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 初始化phpsso
 	 * about phpsso, include client and client configure
@@ -707,60 +724,27 @@ class member extends admin {
 		$this->client = new client($phpsso_api_url, $phpsso_auth_key);
 		return $phpsso_api_url;
 	}
-	
-	/**
-	 * 检查用户名
-	 * @param string $username	用户名
-	 * @return $status {-4：用户名禁止注册;-1:用户名已经存在 ;1:成功}
-	 */
-	public function public_checkname_ajax() {
-		$username = isset($_GET['username']) && trim($_GET['username']) ? trim($_GET['username']) : exit(0);
-		if(CHARSET != 'utf-8') {
-			$username = iconv('utf-8', CHARSET, $username);
-			$username = addslashes($username);
-		}
 
-		$status = $this->client->ps_checkname($username);
-			
-		if($status == -4 || $status == -1) {
-			exit('0');
-		} else {
-			exit('1');
-		}
-		
-	}
-	
-	/**
-	 * 检查邮箱
-	 * @param string $email
-	 * @return $status {-1:email已经存在 ;-5:邮箱禁止注册;1:成功}
-	 */
-	public function public_checkemail_ajax() {
-		$email = isset($_GET['email']) && trim($_GET['email']) ? trim($_GET['email']) : exit(0);
-		
-		$status = $this->client->ps_checkemail($email);
-		if($status == -5) {	//禁止注册
-			exit('0');
-		} elseif($status == -1) {	//用户名已存在，但是修改用户的时候需要判断邮箱是否是当前用户的
-			if(isset($_GET['phpssouid'])) {	//修改用户传入phpssouid
-				$status = $this->client->ps_get_member_info($email, 3);
-				if($status) {
-					$status = unserialize($status);	//接口返回序列化，进行判断
-					if (isset($status['uid']) && $status['uid'] == intval($_GET['phpssouid'])) {
-						exit('1');
-					} else {
-						exit('0');
-					}
-				} else {
-					exit('0');
-				}
-			} else {
-				exit('0');
-			}
-		} else {
-			exit('1');
-		}
-	}
-	
+    /**
+     * 删除头像
+     * @param $userid
+     */
+	private function deleteavatar($userid) {
+        //根据用户id创建文件夹
+        $dir1 = ceil($userid / 10000);
+        $dir2 = ceil($userid % 10000 / 1000);
+
+        //图片存储文件夹
+        $avatarfile = pc_base::load_config('system', 'upload_path').'avatar/';
+        $dir = $avatarfile.$dir1.'/'.$dir2.'/'.$userid.'/';
+        if(file_exists($dir) && $handle = opendir($dir)) {
+            while(false !== ($file = readdir($handle))) {
+                if($file !== '.' && $file !== '..') {
+                    @unlink($dir.$file);
+                }
+            }
+            closedir($handle);
+            @rmdir($dir);
+        }
+    }
 }
-?>

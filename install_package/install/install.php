@@ -61,8 +61,7 @@ switch($step)
 		$selectmod = $_POST['selectmod'];
 		$testdata = $_POST['testdata'];
 		$selectmod = isset($selectmod) ? ','.implode(',', $selectmod) : '';
-		$install_phpsso = (isset($_POST['install_phpsso']) && !empty($_POST['install_phpsso'])) ? intval($_POST['install_phpsso']) : showmessage('请选择sso安装类型');
-		$needmod = 'admin,phpsso';
+		$install_phpsso = (isset($_POST['install_phpsso'])) ? intval($_POST['install_phpsso']) : showmessage('请选择sso安装类型');
 		$reg_sso_status = '';
 		$reg_sso_succ = param::get_cookie('reg_sso_succ');
 		if($install_phpsso === 2 && empty($reg_sso_succ)) {
@@ -77,7 +76,6 @@ switch($step)
 			$sso_info['charset'] = strtolower(CHARSET);
 			$sso_info['type'] = 'phpcms_v9';
 			$data = http_build_query($sso_info);
-			$needmod = 'admin';
 			$remote_url = $sso_url.'api.php?op=install&'.$data;
 			$remote_var = $sso_url.'api.php';
 			if(remote_file_exists($remote_var)) {
@@ -102,8 +100,8 @@ switch($step)
 			}
 		}
 
-		$chmod_file = ($install_phpsso == 1) ? 'chmod.txt' : 'chmod_unsso.txt';
-		$selectmod = $needmod.$selectmod;
+		$chmod_file = $install_phpsso == 1 ? 'chmod.txt' : 'chmod_unsso.txt';
+		$selectmod = 'admin' . ($install_phpsso == 1 ? ',phpsso' : '') . $selectmod;
 		$selectmods = explode(',',$selectmod);
 		$files = file(PHPCMS_PATH."install/".$chmod_file);
 		foreach($files as $_k => $file) {
@@ -151,8 +149,6 @@ switch($step)
 	case '5': //配置帐号 （MYSQL帐号、管理员帐号、）
 		copy(CACHE_PATH.'configs/database_default.php', CACHE_PATH.'configs/database.php');
 		copy(CACHE_PATH.'configs/system_default.php', CACHE_PATH.'configs/system.php');
-		copy(PHPCMS_PATH.'phpsso_server/caches/configs/database_default.php', PHPCMS_PATH.'phpsso_server/caches/configs/database.php');
-		copy(PHPCMS_PATH.'phpsso_server/caches/configs/system_default.php', PHPCMS_PATH.'phpsso_server/caches/configs/system.php');
 		$database = pc_base::load_config('database');
 		$testdata = $_POST['testdata'];
 		extract($database['default']);
@@ -170,12 +166,18 @@ switch($step)
 	case '7': //完成安装
 		$pos = strpos(get_url(),'install/install.php');
 		$url = substr(get_url(),0,$pos);
+		$install_phpsso = $_POST['install_phpsso'];
 		//设置cms与sso 报错信息
-		set_config(array('errorlog'=>'1'),'system');
+		set_config(array('errorlog'=>'1','phpsso'=>$install_phpsso),'system');
 		file_put_contents(CACHE_PATH.'install.lock','');
 		include PHPCMS_PATH."install/step/step".$step.".tpl.php";
 		//删除安装目录
 		delete_install(PHPCMS_PATH.'install/');
+		//删除phpsso目录
+		if ($install_phpsso != 1) {
+			delete_install(PHPCMS_PATH.'phpsso_server/');
+			@unlink(PHPCMS_PATH.'api/phpsso.php');
+		}
 		break;
 
 	case 'installmodule': //执行SQL
@@ -251,7 +253,8 @@ switch($step)
 			}
 		} elseif ($module == 'phpsso') {
 			//安装phpsso
-
+			copy(PHPCMS_PATH.'phpsso_server/caches/configs/database_default.php', PHPCMS_PATH.'phpsso_server/caches/configs/database.php');
+			copy(PHPCMS_PATH.'phpsso_server/caches/configs/system_default.php', PHPCMS_PATH.'phpsso_server/caches/configs/system.php');
 			$ssourl = $siteurl.'phpsso_server/';
 			mt_srand();
 			$cookie_pre = random(5, 'abcdefghigklmnopqrstuvwxyzABCDEFGHIGKLMNOPQRSTUVWXYZ').'_';
