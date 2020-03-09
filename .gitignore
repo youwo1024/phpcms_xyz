@@ -1,6 +1,5 @@
 .idea
 .vscode
-!.gitkeep
 /install_package/caches/
 /install_package/html/
 /install_package/uploadfile/
