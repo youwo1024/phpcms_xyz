@@ -557,6 +557,7 @@ class cache_api {
 		if (is_array($files)) {
 			foreach ($files as $f) {
 				$dir = basename($f);
+				if ($dir == 'index.html') continue;
 				@unlink($path.$dir);
 			}
 		}
