@@ -64,13 +64,14 @@ var password = '<?php echo $password?>';
 var email = '<?php echo $email?>';
 var ftp_user = '<?php echo $dbuser?>';
 var password_key = '<?php echo $password_key?>';
+var install_phpsso = '<?php echo $install_phpsso?>';
 function reloads() {
 	var module = $('#selectmod').val();
 	m_d = module.split(',');
 	$.ajax({
 		   type: "POST",
 		   url: 'install.php',
-		   data: "step=installmodule&module="+m_d[n]+"&dbhost="+dbhost+"&dbport="+dbport+"&dbuser="+dbuser+"&dbpw="+dbpw+"&dbname="+dbname+"&tablepre="+tablepre+"&dbcharset="+dbcharset+"&pconnect="+pconnect+"&username="+username+"&password="+password+"&email="+email+"&ftp_user="+ftp_user+"&password_key="+password_key+"&sid="+Math.random()*5,
+		   data: "step=installmodule&module="+m_d[n]+"&dbhost="+dbhost+"&dbport="+dbport+"&dbuser="+dbuser+"&dbpw="+dbpw+"&dbname="+dbname+"&tablepre="+tablepre+"&dbcharset="+dbcharset+"&pconnect="+pconnect+"&username="+username+"&password="+password+"&email="+email+"&ftp_user="+ftp_user+"&password_key="+password_key+"&install_phpsso="+install_phpsso+"&sid="+Math.random()*5,
 		   success: function(msg){
 			   if(msg==1) {
 				   alert('指定的数据库不存在，系统也无法创建，请先通过其他方式建立好数据库！');

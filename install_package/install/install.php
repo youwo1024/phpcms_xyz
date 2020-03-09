@@ -247,7 +247,11 @@ switch($step)
 				_sql_execute($link,"INSERT INTO ".$tablepre."admin (`userid`,`username`,`password`,`roleid`,`encrypt`,`lastloginip`,`lastlogintime`,`email`,`realname`,`card`) VALUES ('1','$username','$password',1,'$encrypt','','','$email','','')");
 				//设置默认站点1域名
 				_sql_execute($link,"update ".$tablepre."site set `domain`='$siteurl' where `siteid`='1'");
-
+				//仅安装PHPCMS V9
+				if ($install_phpsso == 0) {
+					//隐藏菜单
+					_sql_execute($link,"update ".$tablepre."menu set `display`='0' where `id` IN (8,980)");
+				}
 			} else {
 				echo '2';//数据库文件不存在
 			}
