@@ -9,7 +9,7 @@ $LANG['title_cannot_empty']					=	'专题名称不能为空';
 $LANG['add_special']						=	'添加专题';
 $LANG['add_special_success']				=	'专题添加成功！';
 $LANG['edit_special_success']				=	'专题修改成功！';
-$LANG['select_type']						=	'请选择导入到的分类！';	
+$LANG['select_type']						=	'请选择导入到的分类！';
 $LANG['import_success']						=	'导入成功，系统会自动过滤重复的信息！';
 $LANG['select_model']						=	'请选择模型';
 $LANG['please_in_admin']					=	'请在后台进行此操作！';
@@ -197,9 +197,3 @@ $LANG['week']								=	'本周';
 $LANG['month']								=	'本月';
 $LANG['please_upload_thumb']				=	'请先上传缩略图';
 $LANG['crop_thumb']							=	'裁切图片';
-
-//视频专辑
-$LANG['please_setting_video_info']			=	'请先在模块管理里面安装视频库！';
-$LANG['please_not_setting_info']			=	'您还未完成视频库配置，请先在扩展>>视频库管理中完成该配置';
-$LANG['album_add_success']					=	'专辑载入成功！';
-?>

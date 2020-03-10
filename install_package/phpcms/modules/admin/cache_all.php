@@ -4,7 +4,7 @@ pc_base::load_app_class('admin','admin',0);
 
 class cache_all extends admin {
 	private $cache_api;
-	
+
 	public function init() {
 		if (isset($_POST['dosubmit']) || isset($_GET['dosubmit'])) {
 			$page = $_GET['page'] ? intval($_GET['page']) : 0;
@@ -39,7 +39,6 @@ class cache_all extends admin {
 				array('name' => L('cache_file'), 'function' => 'cache2database'),
 				array('name' => L('cache_copyfrom'), 'function' => 'copyfrom'),
 				array('name' => L('clear_files'), 'function' => 'del_file'),
-				array('name' => L('video_category_tb'), 'function' => 'video_category_tb'),
 			);
 			$this->cache_api = pc_base::load_app_class('cache_api', 'admin');
 			$m = $modules[$page];
@@ -68,4 +67,3 @@ class cache_all extends admin {
 		}
 	}
 }
-?>

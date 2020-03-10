@@ -310,22 +310,12 @@ $LANG['guest_not_allowsearch'] = '游客不允许搜索，请先登录';
 $LANG['cut_the_picture'] = '裁切图片';
 $LANG['moreinfo'] = '调用副表';
 $LANG['contribute_add_point'] = '投稿奖励';
-$LANG['view_video'] = '预览视频';
-$LANG['change_thumb'] = '更换缩略图';
 
-//视频模型
-$LANG['please_input_video_setting'] = '请先完成视频库设置！';
-$LANG['choose_videoes'] = '视频选择';
-$LANG['videoes_store'] = '视频库';
-$LANG['videoes_lists'] = '视频列表';
-$LANG['videoes_num'] = '考虑网络因素，请每次添加、修改时新加视频的数量不超过 <font color="red">5</font> 个</div>';
 $LANG['other_template_setting'] = '其他模板设置';
 $LANG['admin_content_list'] = '后台信息管理模板：';
 $LANG['member_content_add'] = '会员中心信息添加模板：';
 $LANG['clear_data_message'] = '一、初始化数据已经清理完毕，请执行“更新栏目缓存”及“更新缓存”操作！<br />二、初始化数据已经备份到caches/bakup/default/下面';
 $LANG['please_choose_talbes'] = '请选择需要清理的数据';
 $LANG['models'] = '模型';
-$LANG['video_library'] = '视频库';
 $LANG['can_not_recovered'] = '清理后，不可恢复';
 $LANG['clear'] = '清理';
-?>

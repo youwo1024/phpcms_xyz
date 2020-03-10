@@ -31,39 +31,11 @@ function change_images(uploadid,returnid){
 	$('#'+returnid+'_tips').css('display','none');
 	if(contents=='') return true;
 	$.each( contents, function(i, n) {
-		var ids = parseInt(Math.random() * 10000 + 10*i); 
+		var ids = parseInt(Math.random() * 10000 + 10*i);
 		var filename = filenames[i].substr(0,filenames[i].indexOf('.'));
 		str += "<li id='image"+ids+"'><input type='text' name='"+returnid+"_url[]' value='"+n+"' style='width:310px;' ondblclick='image_priview(this.value);' class='input-text'> <input type='text' name='"+returnid+"_alt[]' value='"+filename+"' style='width:160px;' class='input-text' onfocus=\"if(this.value == this.defaultValue) this.value = ''\" onblur=\"if(this.value.replace(' ','') == '') this.value = this.defaultValue;\"> <a href=\"javascript:remove_div('image"+ids+"')\">移除</a> </li>";
 		});
-	
-	$('#'+returnid).html(str);
-}
 
-function change_videoes(uploadid, returnid) {
-	var d = window.top.art.dialog({id:uploadid}).data.iframe;
-	var in_content = d.$("#video-paths").html().substring(1);
-	var in_filename = d.$("#video-name").html().substring(1);
-	var in_vid = d.$("#video-ids").html().substring(1);
-	var video_num = parseInt($("#key").val());
-	var str = $('#'+returnid).html();
-	var contents = in_content.split('|');
-	var fields = uploadid.split('_');
-	var field = fields[0];
-	var filenames = in_filename.split('|');
-	var vids = in_vid.split('|');
-	$('#'+returnid+'_tips').css('display','none');
-	if(contents=='') return true;
-	$.each( contents, function(i, n) {
-		if ($("#thumb").val()==''){
-			$('#thumb').val(contents[i]);
-			$('#thumb_preview').attr('src', contents[i]);
-		}
-		var ids = parseInt(Math.random() * 10000 + 10*i); 
-		video_num = video_num + 1;
-		var filename = filenames[i];
-		str += "<li id=\"video_"+field+"_"+video_num+"\"><div class=\"r1\"><img src=\""+contents[i]+"\" width=\"132\" height=\"75\"><input type=\"text\" name=\""+field+"_video["+video_num+"][title]\" value=\""+filename+"\" class=\"input-text\"><input type='hidden' name='"+field+"_video["+video_num+"][videoid]' value='"+vids[i]+"'><div class=\"r2\"><span class=\"l\"><label>排序</label><input type='text' name='"+field+"_video["+video_num+"][listorder]' value='"+video_num+"' class=\"input-text\"></span><span class=\"r\"> <a href=\"javascript:remove_div('video_"+field+"_"+video_num+"')\">移除</a></span></li>";
-		});
-	$('#key').val(video_num);
 	$('#'+returnid).html(str);
 }
 
@@ -77,7 +49,7 @@ function change_multifile(uploadid,returnid){
 	$('#'+returnid+'_tips').css('display','none');
 	if(contents=='') return true;
 	$.each( contents, function(i, n) {
-		var ids = parseInt(Math.random() * 10000 + 10*i); 
+		var ids = parseInt(Math.random() * 10000 + 10*i);
 		var filename = filenames[i].substr(0,filenames[i].indexOf('.'));
 		str += "<li id='multifile"+ids+"'><input type='text' name='"+returnid+"_fileurl[]' value='"+n+"' style='width:310px;' class='input-text'> <input type='text' name='"+returnid+"_filename[]' value='"+filename+"' style='width:160px;' class='input-text' onfocus=\"if(this.value == this.defaultValue) this.value = ''\" onblur=\"if(this.value.replace(' ','') == '') this.value = this.defaultValue;\"> <a href=\"javascript:remove_div('multifile"+ids+"')\">移除</a> </li>";
 		});
@@ -85,8 +57,8 @@ function change_multifile(uploadid,returnid){
 }
 
 function add_multifile(returnid) {
-	var ids = parseInt(Math.random() * 10000); 
-	var str = "<li id='multifile"+ids+"'><input type='text' name='"+returnid+"_fileurl[]' value='' style='width:310px;' class='input-text'> <input type='text' name='"+returnid+"_filename[]' value='附件说明' style='width:160px;' class='input-text'> <a href=\"javascript:remove_div('multifile"+ids+"')\">移除</a> </li>";	
+	var ids = parseInt(Math.random() * 10000);
+	var str = "<li id='multifile"+ids+"'><input type='text' name='"+returnid+"_fileurl[]' value='' style='width:310px;' class='input-text'> <input type='text' name='"+returnid+"_filename[]' value='附件说明' style='width:160px;' class='input-text'> <a href=\"javascript:remove_div('multifile"+ids+"')\">移除</a> </li>";
 	$('#'+returnid).append(str);
 }
 
@@ -122,7 +94,7 @@ function input_font_bold() {
 }
 function ruselinkurl() {
         if($('#islink').attr('checked')=='checked') {
-                $('#linkurl').attr('disabled',false); 
+                $('#linkurl').attr('disabled',false);
                 var oEditor = CKEDITOR.instances.content;
                 oEditor.insertHtml('　');
                 return false;
@@ -135,7 +107,7 @@ function close_window() {
 	art.dialog({content:'内容已经录入，确定离开将不保存数据！', fixed:true,yesText:'我要关闭',noText:'返回保存数据',style:'confirm', id:'bnt4_test'}, function(){
 				window.close();
 			}, function(){
-				
+
 				});
 	} else {
 		window.close();
@@ -190,7 +162,7 @@ $.getJSON("?m=content&c=content&a=public_getjson_ids&modelid="+modelid+"&id="+id
 	});
 
 	$('#relation_text').html(newrelation_ids);
-}); 
+});
 }
 //移除ID
 function remove_id(id) {

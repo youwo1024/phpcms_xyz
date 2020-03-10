@@ -18,7 +18,7 @@ class content extends foreground {
 		$memberinfo = $this->memberinfo;
 		$grouplist = getcache('grouplist');
 		$priv_db = pc_base::load_model('category_priv_model'); //加载栏目权限表数据模型
-		
+
 		//判断会员组是否允许投稿
 		if(!$grouplist[$memberinfo['groupid']]['allowpost']) {
 			showmessage(L('member_group').L('publish_deny'), HTTP_REFERER);
@@ -34,12 +34,12 @@ class content extends foreground {
 		$siteids = getcache('category_content', 'commons');
 		header("Cache-control: private");
 		if(isset($_POST['dosubmit'])) {
-			
+
 			$catid = intval($_POST['info']['catid']);
 			//判断此类型用户是否有权限在此栏目下提交投稿
-			if (!$priv_db->get_one(array('catid'=>$catid, 'roleid'=>$memberinfo['groupid'], 'is_admin'=>0, 'action'=>'add'))) showmessage(L('category').L('publish_deny'), APP_PATH.'index.php?m=member'); 
-			
-			
+			if (!$priv_db->get_one(array('catid'=>$catid, 'roleid'=>$memberinfo['groupid'], 'is_admin'=>0, 'action'=>'add'))) showmessage(L('category').L('publish_deny'), APP_PATH.'index.php?m=member');
+
+
 			$siteid = $siteids[$catid];
 			$CATEGORYS = getcache('category_content_'.$siteid, 'commons');
 			$category = $CATEGORYS[$catid];
@@ -50,7 +50,7 @@ class content extends foreground {
 			$table_name = $this->content_db->table_name;
 			$fields_sys = $this->content_db->get_fields();
 			$this->content_db->table_name = $table_name.'_data';
-			
+
 			$fields_attr = $this->content_db->get_fields();
 			$fields = array_merge($fields_sys,$fields_attr);
 			$fields = array_keys($fields);
@@ -68,7 +68,7 @@ class content extends foreground {
 			$setting = string2array($category['setting']);
 			if($setting['presentpoint'] < 0 && $memberinfo['point'] < abs($setting['presentpoint']))
 			showmessage(L('points_less_than',array('point'=>$memberinfo['point'],'need_point'=>abs($setting['presentpoint']))),APP_PATH.'index.php?m=pay&c=deposit&a=pay&exchange=point',3000);
-			
+
 			//判断会员组投稿是否需要审核
 			if($grouplist[$memberinfo['groupid']]['allowpostverify'] || !$setting['workflowid']) {
 				$info['status'] = 99;
@@ -78,7 +78,7 @@ class content extends foreground {
 			$info['username'] = $memberinfo['username'];
 			if(isset($info['title'])) $info['title'] = safe_replace($info['title']);
 			$this->content_db->siteid = $siteid;
-			
+
 			$id = $this->content_db->add_content($info);
 			//检查投稿奖励或扣除积分
 			if ($info['status']==99) {
@@ -109,8 +109,8 @@ class content extends foreground {
 			} else {
 				showmessage(L('contributors_checked'), APP_PATH.'index.php?m=member&c=content&a=published');
 			}
-			
-		} else {		
+
+		} else {
 			$show_header = $show_dialog = $show_validator = '';
 			$temp_language = L('news','','content');
 			$sitelist = getcache('sitelist','commons');
@@ -122,7 +122,7 @@ class content extends foreground {
 			param::set_cookie('module', 'content');
 			$siteid = intval($_GET['siteid']);
 			if(!$siteid) $siteid = 1;
-			$CATEGORYS = getcache('category_content_'.$siteid, 'commons'); 
+			$CATEGORYS = getcache('category_content_'.$siteid, 'commons');
 			foreach ($CATEGORYS as $catid=>$cat) {
 				if($cat['siteid']==$siteid && $cat['child']==0 && $cat['type']==0 && $priv_db->get_one(array('catid'=>$catid, 'roleid'=>$memberinfo['groupid'], 'is_admin'=>0, 'action'=>'add'))) break;
 			}
@@ -142,7 +142,7 @@ class content extends foreground {
 			$model_arr = getcache('model', 'commons');
 			$MODEL = $model_arr[$modelid];
 			unset($model_arr);
-	
+
 			require CACHE_MODEL_PATH.'content_form.class.php';
 			$content_form = new content_form($modelid, $catid, $CATEGORYS);
 			$forminfos_data = $content_form->get();
@@ -167,7 +167,7 @@ class content extends foreground {
 			include template('member', $template);
 		}
 	}
-	
+
 	public function published() {
 		$memberinfo = $this->memberinfo;
 		$sitelist = getcache('sitelist','commons');
@@ -183,7 +183,7 @@ class content extends foreground {
 		$siteurl = siteurl($siteid);
 		$pagesize = 20;
 		$page = max(intval($_GET['page']),1);
-		$workflows = getcache('workflow_'.$siteid,'commons');	
+		$workflows = getcache('workflow_'.$siteid,'commons');
 		$this->content_check_db = pc_base::load_model('content_check_model');
 		$infos = $this->content_check_db->listinfo(array('username'=>$_username, 'siteid'=>$siteid),'inputtime DESC',$page);
 		$datas = array();
@@ -198,7 +198,7 @@ class content extends foreground {
 			$datas[] = $_v;
 		}
  		$pages = $this->content_check_db->pages;
-		include template('member', 'content_published');	
+		include template('member', 'content_published');
 	}
 	/**
 	 * 编辑内容
@@ -255,10 +255,10 @@ class content extends foreground {
 					$this->model = getcache('model', 'commons');
 					$this->content_db = pc_base::load_model('content_model');
 					$this->content_db->set_model($modelid);
-		
+
 					$this->content_db->table_name = $this->content_db->db_tablepre.$this->model[$modelid]['tablename'];
 					$r = $this->content_db->get_one(array('id'=>$id,'username'=>$_username,'sysadd'=>0));
-		
+
 					if(!$r) showmessage(L('illegal_operation'));
 					if($r['status']==99) showmessage(L('has_been_verified'));
 					$this->content_db->table_name = $this->content_db->table_name.'_data';
@@ -266,7 +266,7 @@ class content extends foreground {
 					$data = array_merge($r,$r2);
 					require CACHE_MODEL_PATH.'content_form.class.php';
 					$content_form = new content_form($modelid,$catid,$CATEGORYS);
-				
+
 					$forminfos_data = $content_form->get($data);
 					$forminfos = array();
 					foreach($forminfos_data as $_fk=>$_fv) {
@@ -281,17 +281,17 @@ class content extends foreground {
 						$forminfos[$_fk] = $_fv;
 					}
 					$formValidator = $content_form->formValidator;
-				
+
 					include template('member', 'content_publish');
 				}
 			}
 			header("Cache-control: private");
-			
+
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * 会员删除投稿 ...
 	 */
 	public function delete(){
@@ -309,7 +309,7 @@ class content extends foreground {
 		$CATEGORYS = getcache('category_content_'.$siteid, 'commons');
 		$category = $CATEGORYS[$catid];
 		if(!$category){
-			showmessage(L('operation_failure'), HTTP_REFERER); 
+			showmessage(L('operation_failure'), HTTP_REFERER);
  		}
 		$modelid = $category['modelid'];
 		$checkid = 'c-'.$id.'-'.$modelid;
@@ -317,17 +317,17 @@ class content extends foreground {
 		$check_pushed_db = pc_base::load_model('content_check_model');
  		$array = $check_pushed_db->get_one($where);
 		if(!$array){
- 			showmessage(L('operation_failure'), HTTP_REFERER); 
+ 			showmessage(L('operation_failure'), HTTP_REFERER);
 		}else{
 			$content_db = pc_base::load_model('content_model');
 			$content_db->set_model($modelid);
 			$table_name = $content_db->table_name;
  			$content_db->delete_content($id); //删除文章
  			$check_pushed_db->delete(array('checkid'=>$checkid));//删除对应投稿表
-			showmessage(L('operation_success'), HTTP_REFERER); 
+			showmessage(L('operation_success'), HTTP_REFERER);
 		}
 	}
-	
+
 	public function info_publish() {
 		$memberinfo = $this->memberinfo;
 		$grouplist = getcache('grouplist');
@@ -345,7 +345,7 @@ class content extends foreground {
 		if($grouplist[$memberinfo['groupid']]['allowpostnum'] > 0 && $allowpostnum >= $grouplist[$memberinfo['groupid']]['allowpostnum']) {
 			showmessage(L('allowpostnum_deny').$grouplist[$memberinfo['groupid']]['allowpostnum'], HTTP_REFERER);
 		}
-		
+
 		$siteids = getcache('category_content', 'commons');
 		header("Cache-control: private");
 		if(isset($_POST['dosubmit'])) {
@@ -360,7 +360,7 @@ class content extends foreground {
 			$table_name = $this->content_db->table_name;
 			$fields_sys = $this->content_db->get_fields();
 			$this->content_db->table_name = $table_name.'_data';
-			
+
 			$fields_attr = $this->content_db->get_fields();
 			$fields = array_merge($fields_sys,$fields_attr);
 			$fields = array_keys($fields);
@@ -373,7 +373,7 @@ class content extends foreground {
 			$setting = string2array($category['setting']);
 			if($setting['presentpoint'] < 0 && $memberinfo['point'] < abs($setting['presentpoint']))
 			showmessage(L('points_less_than',array('point'=>$memberinfo['point'],'need_point'=>abs($setting['presentpoint']))),APP_PATH.'index.php?m=pay&c=deposit&a=pay&exchange=point',3000);
-			
+
 			//判断会员组投稿是否需要审核
 			if($grouplist[$memberinfo['groupid']]['allowpostverify'] || !$setting['workflowid']) {
 				$info['status'] = 99;
@@ -410,8 +410,8 @@ class content extends foreground {
 			} else {
 				showmessage(L('contributors_checked'), APP_PATH.'index.php?m=member&c=content&a=info_top&id='.$id.'&catid='.$catid.'&msg=1');
 			}
-			
-		} else {		
+
+		} else {
 			$show_header = $show_dialog = $show_validator = '';
 			$step = $step_1 = $step_2 = $step_3 = $step_4;
 			$temp_language = L('news','','content');
@@ -425,15 +425,15 @@ class content extends foreground {
 			//设置cookie 在附件添加处调用
 			param::set_cookie('module', 'content');
 			$siteid = intval($_GET['siteid']);
-			
+
 			//获取信息模型类别、区域、城市信息
 			$info_linkageid = getinfocache('info_linkageid');
 			$cityid = getcity(trim($_GET['city']),'linkageid');
-			$cityname = getcity(trim($_GET['city']),'name');			
-			$citypinyin = getcity(trim($_GET['city']),'pinyin');			
+			$cityname = getcity(trim($_GET['city']),'name');
+			$citypinyin = getcity(trim($_GET['city']),'pinyin');
 			$zone = intval($_GET['zone']);
 			$zone_name = get_linkage($zone, $info_linkageid, '', 0);
-			
+
 			if(!$siteid) $siteid = 1;
 			$CATEGORYS = getcache('category_content_'.$siteid, 'commons');
 			$priv_db = pc_base::load_model('category_priv_model'); //加载栏目权限表数据模型
@@ -453,28 +453,28 @@ class content extends foreground {
 				include template('member', 'info_content_publish_select');
 				exit;
 			} elseif($zone == 0 && $category['child']) {
-				$step = 2;	
+				$step = 2;
 				$step_1 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'">'.$category['catname'].'</a>';
 				include template('member', 'info_content_publish_select');
 				exit;
 			} elseif($zone == 0 && isset($_GET['catid'])) {
-				$step = 3;	
+				$step = 3;
 				$step_1 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'">'.$CATEGORYS[$category['parentid']]['catname'].'</a>';
-				$step_2 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'&catid='.$category['parentid'].'">'.$category['catname'].'</a>';			
+				$step_2 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'&catid='.$category['parentid'].'">'.$category['catname'].'</a>';
 				$zone_arrchild = show_linkage($info_linkageid,$cityid,$cityid);
 				include template('member', 'info_content_publish_select');
 				exit;
 			} elseif($zone !== 0 && get_linkage_level($info_linkageid,$zone,'child') && !$_GET['jumpstep']) {
-				$step = 4;				
-				$step_1 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'">'.$CATEGORYS[$category['parentid']]['catname'].'</a>';	
-				$step_2 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'&catid='.$category['parentid'].'">'.$category['catname'].'</a>';	
-				$step_3 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'&catid='.$catid.'">'.$zone_name.'</a>';	
-							
+				$step = 4;
+				$step_1 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'">'.$CATEGORYS[$category['parentid']]['catname'].'</a>';
+				$step_2 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'&catid='.$category['parentid'].'">'.$category['catname'].'</a>';
+				$step_3 = '<a href="'.APP_PATH.'index.php?m=member&c=content&a=info_publish&siteid='.$siteid.'&city='.$citypinyin.'&catid='.$catid.'">'.$zone_name.'</a>';
+
 				$zone_arrchild = get_linkage_level($info_linkageid,$zone,'arrchildinfo');
 				include template('member', 'info_content_publish_select');
-				exit;				
+				exit;
 			}
-									
+
 			if($setting['presentpoint'] < 0 && $memberinfo['point'] < abs($setting['presentpoint']))
 			showmessage(L('points_less_than',array('point'=>$memberinfo['point'],'need_point'=>abs($setting['presentpoint']))),APP_PATH.'index.php?m=pay&c=deposit&a=pay&exchange=point',3000);
 			if($category['type']!=0) showmessage(L('illegal_operation'));
@@ -482,10 +482,10 @@ class content extends foreground {
 
 			require CACHE_MODEL_PATH.'content_form.class.php';
 			$content_form = new content_form($modelid, $catid, $CATEGORYS);
-			
+
 			$data = array('zone'=>$zone,'city'=>$cityid);
 			$forminfos_data = $content_form->get($data);
-			
+
 			$forminfos = array();
 			foreach($forminfos_data as $_fk=>$_fv) {
 				if($_fv['isomnipotent']) continue;
@@ -501,8 +501,8 @@ class content extends foreground {
 			$formValidator = $content_form->formValidator;
 			//去掉栏目id
 			unset($forminfos['catid']);
-			
-			
+
+
 			$workflowid = $setting['workflowid'];
 			header("Cache-control: private");
 			include template('member', 'info_content_publish');
@@ -513,21 +513,21 @@ class content extends foreground {
 		$memberinfo = $this->memberinfo;
 		$_username = $this->memberinfo['username'];
 		$id = intval($_GET['id']);
-		
+
 		$catid = $_GET['catid'];
 		$pos_data = pc_base::load_model('position_data_model');
-		
-		if(!$id || !$catid) showmessage(L('illegal_parameters'), HTTP_REFERER);	
+
+		if(!$id || !$catid) showmessage(L('illegal_parameters'), HTTP_REFERER);
 		if(isset($catid) && $catid) {
 			$siteids = getcache('category_content', 'commons');
 			$siteid = $siteids[$catid];
 			$CATEGORYS = getcache('category_content_'.$siteid, 'commons');
-			$category = $CATEGORYS[$catid];	
+			$category = $CATEGORYS[$catid];
 			if($category['type']==0) {
 				$modelid = $category['modelid'];
 				$this->model = getcache('model', 'commons');
 				$this->content_db = pc_base::load_model('content_model');
-				$this->content_db->set_model($modelid);				
+				$this->content_db->set_model($modelid);
 				$this->content_db->table_name = $this->content_db->db_tablepre.$this->model[$modelid]['tablename'];
 				$r = $this->content_db->get_one(array('id'=>$id,'username'=>$_username,'sysadd'=>0));
 				if(!$r) showmessage(L('illegal_operation'));
@@ -535,15 +535,15 @@ class content extends foreground {
 				//再次重新赋值，以数据库为准
 				$catid = $CATEGORYS[$r['catid']]['catid'];
 				$modelid = $CATEGORYS[$catid]['modelid'];
-				
+
 				require_once CACHE_MODEL_PATH.'content_output.class.php';
 				$content_output = new content_output($modelid,$catid,$CATEGORYS);
 				$data = $content_output->get($r);
-				extract($data);								
+				extract($data);
 			}
 		}
 		//置顶推荐位数组
-			$infos = getcache('info_setting','commons'); 
+			$infos = getcache('info_setting','commons');
 		$toptype_posid = array('1'=>$infos['top_city_posid'],
 							   '2'=>$infos['top_zone_posid'],
 							   '3'=>$infos['top_district_posid'],
@@ -551,15 +551,15 @@ class content extends foreground {
 		foreach($toptype_posid as $_k => $_v) {
 			if($pos_data->get_one(array('id'=>$id,'catid'=>$catid,'posid'=>$_v))) {
 				$exist_posids[$_k] = 1;
-			}			
+			}
 		}
 		include template('member', 'info_top');
 	}
 	function info_top_cost() {
 		$amount = $msg = '';
 		$memberinfo = $this->memberinfo;
-		$_username = $this->memberinfo['username'];	
-		$_userid = $this->memberinfo['userid'];	
+		$_username = $this->memberinfo['username'];
+		$_userid = $this->memberinfo['userid'];
 		$infos = getcache('info_setting','commons');
 		$toptype_arr = array(1,2,3);
 		//置顶积分数组
@@ -567,18 +567,18 @@ class content extends foreground {
 							   '2'=>$infos['top_zone'],
 							   '3'=>$infos['top_district'],
 							  );
-		//置顶推荐位数组					  
+		//置顶推荐位数组
 		$toptype_posid = array('1'=>$infos['top_city_posid'],
 							   '2'=>$infos['top_zone_posid'],
 							   '3'=>$infos['top_district_posid'],
-							  );							  				
+							  );
 		if(isset($_POST['dosubmit'])) {
 			$posids = array();
 			$push_api = pc_base::load_app_class('push_api','admin');
 			$pos_data = pc_base::load_model('position_data_model');
 			$catid = intval($_POST['catid']);
 			$id = intval($_POST['id']);
-			$flag = $catid.'_'.$id;			
+			$flag = $catid.'_'.$id;
 			$toptime = intval($_POST['toptime']);
 			if($toptime == 0 || empty($_POST['toptype'])) showmessage(L('info_top_not_setting_toptime'));
 			//计算置顶扣费积分，时间
@@ -588,13 +588,13 @@ class content extends foreground {
 						$posids[] = $toptype_posid[$r];
 						$amount += $toptype_price[$r];
 						$msg .= $r.'-';
-					}				
+					}
 				}
 			}
 			//应付总积分
 			$amount = $amount * $toptime;
-				
-			//扣除置顶点数		
+
+			//扣除置顶点数
 			pc_base::load_app_class('spend','pay',0);
 			$pay_status = spend::point($amount, L('info_top').$msg, $_userid, $_username, '', '', $flag);
 			if($pay_status == false) {
@@ -610,25 +610,25 @@ class content extends foreground {
 				$siteids = getcache('category_content', 'commons');
 				$siteid = $siteids[$catid];
 				$CATEGORYS = getcache('category_content_'.$siteid, 'commons');
-				$category = $CATEGORYS[$catid];	
+				$category = $CATEGORYS[$catid];
 				if($category['type']==0) {
 					$modelid = $category['modelid'];
 					$this->model = getcache('model', 'commons');
 					$this->content_db = pc_base::load_model('content_model');
-					$this->content_db->set_model($modelid);				
+					$this->content_db->set_model($modelid);
 					$this->content_db->table_name = $this->content_db->db_tablepre.$this->model[$modelid]['tablename'];
-					$r = $this->content_db->get_one(array('id'=>$id,'username'=>$_username,'sysadd'=>0));							
+					$r = $this->content_db->get_one(array('id'=>$id,'username'=>$_username,'sysadd'=>0));
 				}
 			}
-			if(!$r) showmessage(L('illegal_operation'));	
-			
-			$push_api->position_update($id, $modelid, $catid, $posids, $r, $expiration, 1);	
+			if(!$r) showmessage(L('illegal_operation'));
+
+			$push_api->position_update($id, $modelid, $catid, $posids, $r, $expiration, 1);
 			$refer = $_POST['msg'] ? $r['url'] : '';
 			if($_POST['msg']) showmessage(L('ding_success'),$refer);
 			else showmessage(L('ding_success'), '', '', 'top');
-			
-		} else {	
-				
+
+		} else {
+
 			$toptype = trim($_POST['toptype']);
 			$toptime = trim($_POST['toptime']);
 			$types = explode('_', $toptype);
@@ -636,13 +636,13 @@ class content extends foreground {
 				foreach($types as $r) {
 					if(is_numeric($r) && in_array($r, $toptype_arr)) {
 						$amount += $toptype_price[$r];
-					}				
+					}
 				}
 			}
 			$amount = $amount * $toptime;
 			echo $amount;
 		}
-	}		
+	}
 	/**
 	 * 初始化phpsso
 	 * about phpsso, include client and client configure
@@ -656,77 +656,4 @@ class content extends foreground {
 		$this->client = new client($phpsso_api_url, $phpsso_auth_key);
 		return $phpsso_api_url;
 	}
-	
-	/**
-	 * Function UPLOAD_VIDEO
-	 * 用户上传视频
-	 */
-	public function upload_video() {
-		
-		$memberinfo = $this->memberinfo;
-		$grouplist = getcache('grouplist');
-		//判断会员组是否允许投稿
-		if(!$grouplist[$memberinfo['groupid']]['allowpost']) {
-			showmessage(L('member_group').L('publish_deny'), HTTP_REFERER);
-		}
-		//判断每日投稿数
-		$this->content_check_db = pc_base::load_model('content_check_model');
-		$todaytime = strtotime(date('y-m-d',SYS_TIME));
-		$_username = $this->memberinfo['username'];
-		$allowpostnum = $this->content_check_db->count("`inputtime` > $todaytime AND `username`='$_username'");
-		if($grouplist[$memberinfo['groupid']]['allowpostnum'] > 0 && $allowpostnum >= $grouplist[$memberinfo['groupid']]['allowpostnum']) {
-			showmessage(L('allowpostnum_deny').$grouplist[$memberinfo['groupid']]['allowpostnum'], HTTP_REFERER);
-		}
-		//加载视频库配置信息 
-		pc_base::load_app_class('ku6api', 'video', 0);
-		$setting = getcache('video', 'video');
-		if(empty($setting)) {
-			showmessage('上传功能还在开发中，请稍后重试！');
-		}
-		$ku6api = new ku6api($setting['sn'], $setting['skey']);
-		if (isset($_POST['dosubmit'])) {
-			$_POST['info']['catid'] = isset($_POST['info']['catid']) ? intval($_POST['info']['catid']) : showmessage('请选择栏目！');
-			$_POST['info']['title'] = isset($_POST['info']['title']) ? safe_replace($_POST['info']['title']) : showmessage('标题不能为空！');
-			$_POST['info']['keywords'] = isset($_POST['info']['keywords']) ? safe_replace($_POST['info']['keywords']) : '';
-			$_POST['info']['description'] = isset($_POST['info']['description']) ? safe_replace($_POST['info']['description']) : '';
-			//查询此模型下的视频字段
-			$field = get_video_field($_POST['info']['catid']);
-			if (!$field) showmessage('上传功能还在开发中，请稍后重试！');
-			$_POST['info'][$field] = 1;
-			$_POST[$field.'_video'] = array(1=>array('title'=>$_POST['info']['title'], 'vid' => $_POST['vid'], 'listorder'=>1)); 
-			unset($_POST['vid']);
-			$this->publish();
-		} else {
-			$categorys = video_categorys();
-			if (is_array($categorys) && !empty($categorys)) {
-				$cat = array();
-				$priv_db = pc_base::load_model('category_priv_model'); //加载栏目权限表数据模型
-				foreach ($categorys as $cid=>$c) {
-					if($c['child']==0 && $c['type']==0 && !$priv_db->get_one(array('catid'=>$cid, 'roleid'=>$memberinfo['groupid'], 'is_admin'=>0, 'action'=>'add'))) unset($categorys[$cid]);
-				}
-				if (empty($categorys)) showmessage(L('category').L('publish_deny'), APP_PATH.'index.php?m=member');
-				foreach ($categorys as $cid => $c) {
-					if ($c['child']) {
-						$ischild = 1;
-						$categorys[$cid]['disabled'] = 'disabled';
-					}
-					$cat[$cid] = $c['catname'];
-				}
-				if (!$ischild) {
-					$cat_list = form::radio($cat, '', 'name="info[catid]"', '90');
-				} else {
-					$tree = pc_base::load_sys_class('tree');
-					$str  = "<option value='\$catid' \$selected \$disabled>\$spacer \$catname</option>";
-
-					$tree->init($categorys);
-					$string = $tree->get_tree(0, $str);
-					$cat_list = '<select name="info[catid]" id="catid"><option value="0">请选择栏目</option>'.$string.'</select>';
-				}
-			}
-			$flash_info = $ku6api->flashuploadparam(); //加载视频上传工具信息
-			
-			include template('member', 'upload_video');
-		}
-	}
 }
-?>

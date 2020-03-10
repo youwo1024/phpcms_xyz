@@ -24,7 +24,6 @@ $fields = array('text'=>'单行文本',
 				'downfiles'=>'多文件上传',
 				'map'=>'地图字段',
 				'omnipotent'=>'万能字段',
-				'video'=>'视频库',
 				);
 //不允许删除的字段，这些字段讲不会在字段添加处显示
 $not_allow_fields = array('catid','typeid','title','keyword','posid','template','username');
@@ -36,4 +35,3 @@ $forbid_fields = array('catid','title','updatetime','inputtime','url','listorder
 $forbid_delete = array('catid','typeid','title','thumb','keywords','updatetime','inputtime','posids','url','listorder','status','template','username');
 //可以追加 JS和CSS 的字段
 $att_css_js = array('text','textarea','box','number','keyword','typeid');
-?>

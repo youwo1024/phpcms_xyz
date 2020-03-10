@@ -1,24 +1,24 @@
-<?php 
+<?php
 defined('IN_PHPCMS') or exit('No permission resources.');
 
 pc_base::load_app_func('global', 'special');
 class index {
-	
+
 	private $db;
-	
+
 	function __construct() {
 		$this->db = pc_base::load_model('special_model');
 	}
-	
+
 	/**
-	 * 专题列表 
+	 * 专题列表
 	 */
 	public function special() {
 		$siteid = $_GET['siteid'] ? intval($_GET['siteid']) : (get_siteid() ? get_siteid() : 1);
 		$SEO = seo($siteid);
 		include template('special', 'special_list');
 	}
-	
+
 	/**
 	 * 专题首页
 	 */
@@ -48,7 +48,7 @@ class index {
 		define('STYLE',$info['style']);
 		include template('special', $template);
 	}
-	
+
 	/**
 	 * 专题分类
 	 */
@@ -68,14 +68,14 @@ class index {
 		$template = $list_template ? $list_template : 'list';
  		include template('special', $template);
 	}
-	
+
 	/**
 	 * 专题展示
 	 */
 	public function show() {
 		$id = intval($_GET['id']);
 		if(!$id) showmessage(L('content_not_exist'),'blank');
-		
+
 		$page = $_GET['page'];
 		$c_db = pc_base::load_model('special_content_model');
 		$c_data_db = pc_base::load_model('special_c_data_model');
@@ -97,7 +97,7 @@ class index {
 				}
 				$contentpage = pc_base::load_app_class('contentpage', 'content'); //调用自动分页类
 				$content = $contentpage->get_data($content, $maxcharperpage); //自动分页，自动添加上[page]
-			} 
+			}
 		} else {
 			if (strpos($content, '[/page]')!==false) {
 				$content = preg_replace("|\[page\](.*)\[/page\]|U", '', $content);
@@ -130,7 +130,7 @@ class index {
 					}
 				}
 			}
-			//判断[page]出现的位置是否在第一位 
+			//判断[page]出现的位置是否在第一位
 			if($CONTENT_POS<7) {
 				$content = $contents[$page];
 			} else {
@@ -153,12 +153,7 @@ class index {
 			pc_base::load_app_func('util', 'content');
 			$title_pages = content_pages($pagenumber,$page, $pageurls);
 		}
-		$_special = $this->db->get_one(array('id'=>$specialid), '`title`, `url`, `show_template`, `isvideo`');
-		if ($_special['isvideo']) {
-			$video_store = pc_base::load_model('video_store_model');
-			$v_r = $video_store->get_one(array('videoid'=>$videoid), 'vid');
-			$video['vid'] = $v_r['vid'];
-		}
+		$_special = $this->db->get_one(array('id'=>$specialid), '`title`, `url`, `show_template`');
 		pc_base::load_sys_class('format', '', 0);
 		$inputtime = format::date($inputtime,1);
 		$SEO = seo($siteid, '', $title);
@@ -166,7 +161,7 @@ class index {
 		$style = $style ? $style : 'default';
 		include template('special', $template, $style);
 	}
-	
+
 	public function comment_show() {
 		$commentid = isset($_GET['commentid']) ? $_GET['commentid'] : 0;
 		$url = isset($_GET['url']) ? $_GET['url'] : HTTP_REFERER;
@@ -174,7 +169,7 @@ class index {
 		$userid = param::get_cookie('_userid');
 		include template('special', 'comment_show');
 	}
-	
+
 	public function comment() {
 		if (!$_GET['id']) return '0';
 		$siteid =  $_GET['siteid'] ? $_GET['siteid'] : get_siteid();
@@ -200,4 +195,3 @@ class index {
 		}
 	}
 }
-?>

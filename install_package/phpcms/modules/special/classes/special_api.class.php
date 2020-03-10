@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  special_api.class.php 专题接口类
  *
@@ -10,17 +10,17 @@
 defined('IN_PHPCMS') or exit('No permission resources.');
 
 class special_api {
-	
+
 	private $db, $type_db, $c_db, $data_db;
 	public $pages;
-	
+
 	public function __construct() {
 		$this->db = pc_base::load_model('special_model'); //专题数据模型
 		$this->type_db = pc_base::load_model('type_model'); //专题分类数据模型
 		$this->c_db = pc_base::load_model('special_content_model'); //专题内容数据模型
-		$this->data_db = pc_base::load_model('special_c_data_model'); 
+		$this->data_db = pc_base::load_model('special_c_data_model');
 	}
-	
+
 	/**
 	 * 更新分类
 	 * @param intval $pid 专题ID
@@ -69,7 +69,7 @@ class special_api {
 					}
 					$v['url'] = $url;
 					$this->type_db->update($v, array('typeid'=>$typeid));
-				} 
+				}
 				if ((!isset($v['del']) || empty($v['del'])) && $v['typeid']) {
 					$this->type_db->update(array('name'=>$v['name'], 'typedir'=>$v['typedir'], 'listorder'=>$v['listorder']), array('typeid'=>$r['typeid']));
 					if ($siteid>1) {
@@ -88,7 +88,7 @@ class special_api {
 					$typeid = $v['typeid'];
 					unset($v['typeid']);
 					$this->type_db->update($v, array('typeid'=>$typeid));
-				} 
+				}
 				if ($v['typeid'] && $v['del']) {
 					$this->delete_type($v['typeid'], $siteid, $special_info['ishtml']);
 				}
@@ -96,13 +96,13 @@ class special_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 调取内容信息
 	 * @param intval $modelid 模型ID
 	 * @param string $where sql语句
 	 * @param intval $page 分页
-	 * @return array 返回调取的数据 
+	 * @return array 返回调取的数据
 	 */
 	public function _get_import_data($modelid = 0, $where = '', $page) {
 		$c = pc_base::load_model('content_model');
@@ -112,12 +112,12 @@ class special_api {
 		$this->pages = $c->pages;
 		return $data;
 	}
-	
+
 	/**
 	 * 信息推荐至专题接口
 	 * @param array $param 属性 请求时，为模型、栏目数组。 例：array('modelid'=>1, 'catid'=>12); 提交添加为二维信息数据 。例：array(1=>array('title'=>'多发发送方法', ....))
 	 * @param array $arr 参数 表单数据，只在请求添加时传递。
-	 * @return 返回专题的下拉列表 
+	 * @return 返回专题的下拉列表
 	 */
 	public function _get_special($param = array(), $arr = array()) {
 		if ($arr['dosubmit']) {
@@ -156,7 +156,7 @@ class special_api {
 			);
 		}
 	}
-	
+
 	/**
 	 * 获取分类
 	 * @param intval $specialid 专题ID
@@ -171,7 +171,7 @@ class special_api {
 		}
 		return form::select($arr, '', 'name="typeid", id="typeid"', L('please_select'));
 	}
-	
+
 	/**
 	 * 调取专题的附属分类
 	 * @param intval $specialid 专题ID
@@ -190,17 +190,17 @@ class special_api {
 	/**
 	 * 删除专题 执行删除操作的方法，同时删除专题下的分类、信息、及生成静态文件和图片
 	 * @param intval $id 专题ID
-	 * @return boolen 
+	 * @return boolen
 	 */
 	public function _del_special($id = 0) {
 		$id = intval($id);
 		if (!$id) return false;
-		
+
 		//检查专题下是否有信息
 		$rs = $this->c_db->select(array('specialid'=>$id), 'id');
 
 		$info = $this->db->get_one(array('id'=>$id, 'siteid'=>get_siteid()), 'siteid, ispage, filename, ishtml');
-		
+
 		//有信息时，循环删除
 		if (is_array($rs) && !empty($rs)) {
 			foreach ($rs as $r) {
@@ -255,7 +255,7 @@ class special_api {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 导入的数据添加到数据表
 	 * @param intval $modelid	 模型ID
@@ -283,7 +283,7 @@ class special_api {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 删除专题分类
 	 * @param intval $typeid 专题附属分类ID
@@ -293,7 +293,7 @@ class special_api {
 	private function delete_type($typeid = 0, $siteid = 0, $ishtml = 0) {
 		$typeid = intval($typeid);
 		if (!$typeid) return false;
-		
+
 		pc_base::load_sys_func('dir');
 		$info = $this->type_db->get_one(array('typeid'=>$typeid));
 		if ($ishtml) {
@@ -327,7 +327,7 @@ class special_api {
 		$this->type_db->delete(array('typeid'=>$typeid)); //删除数据表记录
 		return true;
 	}
-	
+
 	/**
 	 * 删除专题信息，同时删除专题的信息，及相关的静态文件、图片
 	 * @param intval $cid 专题信息ID
@@ -338,14 +338,14 @@ class special_api {
 		$info = $this->c_db->get_one(array('id'=>$cid), 'inputtime, isdata');
 
 		if ($info['isdata']) {
-			if ($ishtml) {	
+			if ($ishtml) {
 				pc_base::load_app_func('global', 'special');
 				$siteid = $siteid ? intval($siteid) : get_siteid();
 				if ($siteid>1) {
 					$site = pc_base::load_app_class('sites', 'admin');
 					$site_info = $site->get_by_id($siteid);
 					$queue = pc_base::load_model('queue_model');
-					
+
 					for ($i = 1; $i>0; $i++) {
 						$file = content_url($cid, $i, $info['inputtime'], 'html', $site_info);
 						if (!file_exists(PHPCMS_PATH.$file[1])) {
@@ -366,78 +366,22 @@ class special_api {
 					}
 				}
 			}
-			
+
 			//删除全站搜索数据
 			$this->search_api($cid, '', '', 'delete');
-			
+
 			// 删除数据统计表数据
 			$count = pc_base::load_model('hits_model');
 			$hitsid = 'special-c-'.$info['specialid'].'-'.$cid;
 			$count->delete(array('hitsid'=>$hitsid));
-			
+
 			//删除信息内容表中的数据
 			$this->data_db->delete(array('id'=>$cid));
 		}
 		$this->c_db->delete(array('id'=>$cid)); //删除信息表中的数据
 		return true;
 	}
-	
-	/**
-	 * Function importfalbum
-	 * 将专辑载入到专题
-	 * @param array $info 专辑详细信息
-	 */
-	public function importfalbum($info = array()) {
-		static $siteid,$sitelists;
-		if (!$siteid) $siteid = get_siteid();
-		if (!$sitelists) $sitelists = getcache('sitelist', 'commons');
-		pc_base::load_sys_func('iconv');
-		if (is_array($info)) {
-			$username = param::get_cookie('admin_username');
-			$userid = param::get_cookie('userid');
-			$arr = array(
-						'siteid' => $siteid,
-						'aid' => $info['id'],
-						'title' => $info['title'],
-						'thumb' => format_url($info['coverurl']),
-						'banner' => format_url($info['coverurl']),
-						'description' => $info['desc'],
-						'ishtml' => 0,
-						'ispage' => 0,
-						'style' => 'default',
-						'index_template' => 'index_video',
-						'list_template' => 'list_video',
-						'show_template' => 'show_video',
-						'username' => $username,
-						'userid' =>$userid,
-						'createtime' => SYS_TIME,
-						'isvideo' => 1,
-					);
-			//将数据插入到专题表中
-			$arr = new_html_special_chars($arr);
-			$specialid = $this->db->insert($arr, true);
-			$url = $sitelists[$siteid]['domain'].'index.php?m=special&c=index&id='.$specialid;
-			$this->db->update(array('url'=>$url), array('id'=>$specialid));
-			//组合子分类数组
-			$letters = gbk_to_pinyin($info['title']);
-			$type_info = array(
-							'siteid' => $siteid,
-							'module' => 'special',
-							'modelid' => 0,
-							'name' => new_html_special_chars($info['title']),
-							'parentid' => $specialid,
-							'typedir' => strtolower(implode('', $letters)),
-							'listorder' => 1,
-							);
-			$typeid = $this->type_db->insert($type_info, true);
-			$url = $sitelists[$siteid]['domain'].'index.php?m=special&c=index&a=type&specialid='.$specialid.'&typeid='.$typeid;
-			$this->type_db->update(array('url'=>$url), array('typeid'=>$typeid));
-			return $specialid;
-		} else {
-			return false;
-		}
-	}
-	
+
 	/**
 	 * 添加到全站搜索
 	 * @param intval $id 文章ID
@@ -458,4 +402,3 @@ class special_api {
 		}
 	}
 }
-?>

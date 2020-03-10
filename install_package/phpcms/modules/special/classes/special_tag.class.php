@@ -1,17 +1,17 @@
 <?php
 /**
  * special_tag.class.php 专题标签调用类
- * @author 
+ * @author
  *
  */
 class special_tag {
 	private $db, $c;
-	
+
 	public function __construct() {
 		$this->db = pc_base::load_model('special_model');
 		$this->c = pc_base::load_model('special_content_model');
 	}
-	
+
 	/**
 	 * lists调用方法
 	 * @param array $data 标签配置传递过来的配置数组，根据配置生成sql
@@ -20,7 +20,7 @@ class special_tag {
 		$siteid = $data['siteid'] ? intval($data['siteid']) : get_siteid();
 		$where .= "`siteid`='".$siteid."'";
 		if ($data['elite']) $where .= " AND `elite`='1'";
-		if ($data['thumb']) $where .= " AND `thumb`!=''"; 
+		if ($data['thumb']) $where .= " AND `thumb`!=''";
 		if ($data['disable']) {
 			$where .= " AND `disabled`='".$data['disable']."'";
 		}else{
@@ -29,26 +29,7 @@ class special_tag {
 		$listorder = array('`id` ASC', '`id` DESC', '`listorder` ASC, `id` DESC', '`listorder` DESC, `id` DESC');
 		return $this->db->select($where, '*', $data['limit'], $listorder[$data['listorder']]);
 	}
-	
-	/**
-	 * 视频专题列表 video_lists
-	 * @param array $data 标签配置传递过来的配置数组，根据配置生成sql
-	 */
-	public function video_lists($data) {
-		$siteid = $data['siteid'] ? intval($data['siteid']) : get_siteid();
-		$where .= "`siteid`='".$siteid."'";
-		if ($data['elite']) $where .= " AND `elite`='1'";
-		if ($data['thumb']) $where .= " AND `thumb`!=''"; 
-		if ($data['disable']) {
-			$where .= " AND `disabled`='".$data['disable']."'";
-		}else{
-			$where .= " AND `disabled`='0'";//默认显示，正常显示的专题。
-		}
-		$where .=" AND `isvideo`='1'";
-		$listorder = array('`id` ASC', '`id` DESC', '`listorder` ASC, `id` DESC', '`listorder` DESC, `id` DESC');
-		return $this->db->select($where, '*', $data['limit'], $listorder[$data['listorder']]);
-	}
-	
+
 	/**
 	 * 标签中计算分页的方法
 	 * @param array $data 标签配置数组，根据数组计算出分页
@@ -59,7 +40,7 @@ class special_tag {
 			$where = '1';
 			if ($data['siteid']) $where .= " AND `siteid`='".$data['siteid']."'";
 			if ($data['elite']) $where .= " AND `elite`='1'";
-			if ($data['thumb']) $where .= " AND `thumb`!=''"; 
+			if ($data['thumb']) $where .= " AND `thumb`!=''";
 			$r = $this->db->get_one($where, 'COUNT(id) AS total');
 		} elseif ($data['action'] == 'content_list') {
 			if ($data['specialid']) $where .= " AND `specialid`='".$data['specialid']."'";
@@ -74,17 +55,10 @@ class special_tag {
 			$hits_db = pc_base::load_model('hits_model');
 			$sql = "hitsid LIKE '$hitsid'";
 			$r = $hits_db->get_one($sql, 'COUNT(*) AS total');
-		}elseif($data['action'] == 'video_lists') {
-			$where = '1';
-			if ($data['siteid']) $where .= " AND `siteid`='".$data['siteid']."'";
-			if ($data['elite']) $where .= " AND `elite`='1'";
-			if ($data['thumb']) $where .= " AND `thumb`!=''"; 
-			$where .=" AND `isvideo`='1'";
-			$r = $this->db->get_one($where, 'COUNT(id) AS total');
 		}
 		return $r['total'];
 	}
-	
+
 	/**
 	 * 点击排行调用方法
 	 * @param array $data 标签配置数组
@@ -107,7 +81,7 @@ class special_tag {
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * 内容列表调用方法
 	 * @param array $data 标签配置数组
@@ -132,13 +106,13 @@ class special_tag {
 		}
 		return $res;
 	}
-	
+
 	/**
 	 * 获取专题分类方法
 	 * @param intval $specialid 专题ID
 	 * @param string $value 默认选中值
 	 * @param intval $id onchange影响HTML的ID
-	 * 
+	 *
 	 */
 	public function get_type($specialid = 0, $value = '', $id = '') {
 		$type_db = pc_base::load_model('type_model');
@@ -151,7 +125,7 @@ class special_tag {
 		$html = $id ? ' id="typeid" onchange="$(\'#'.$id.'\').val(this.value);"' : 'name="typeid", id="typeid"';
 		return form::select($arr, $value, $html, L('please_select'));
 	}
-	
+
 	/**
 	 * 标签生成方法
 	 */
@@ -159,7 +133,7 @@ class special_tag {
 		//获取站点
 		$sites = pc_base::load_app_class('sites','admin');
 		$sitelist = $sites->pc_tag_list();
-		
+
 		$result = getcache('special', 'commons');
 		if(is_array($result)) {
 			$specials = array(L('please_select'));
@@ -188,4 +162,3 @@ class special_tag {
 		);
 	}
 }
-?>
