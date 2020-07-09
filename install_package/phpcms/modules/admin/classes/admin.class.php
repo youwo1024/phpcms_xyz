@@ -64,7 +64,7 @@ class admin {
 		if ($site_model && $parentid) {
 			$where[$site_model] = 1;
  		}
-		$result =$menudb->select($where,'*',1000,'listorder ASC');
+		$result =$menudb->select($where,'*',1000,'listorder ASC, id ASC');
 		if($with_self) {
 			$result2[] = $menudb->get_one(array('id'=>$parentid));
 			$result = array_merge($result2,$result);
